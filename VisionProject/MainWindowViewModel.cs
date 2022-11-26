@@ -184,6 +184,11 @@ namespace VisionProject
             });
         }
 
+        public RelayCommand ThresholdCommand
+        {
+            get => new RelayCommand(Threshold);
+        }
+
         /// <summary>
         /// 이미지 샘플링을 위한 비트맵소스 읽어오는 함수
         /// </summary>
@@ -432,6 +437,10 @@ namespace VisionProject
             br.ReadUInt32();              // biClrImportant
 
             return true;
+        }
+
+        private void Threshold()
+        {
         }
 
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)

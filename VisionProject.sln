@@ -4,8 +4,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.32407.337
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisionProject", "VisionProject\VisionProject.csproj", "{618BC376-8EF7-40B0-81FD-7627358FDBC0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{55A5AC26-A612-4B4C-B885-B82123D349A2} = {55A5AC26-A612-4B4C-B885-B82123D349A2}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CLR", "CLR\CLR.vcxproj", "{55A5AC26-A612-4B4C-B885-B82123D349A2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{70CA5B1E-4532-45A1-B2B9-8BF6AF88260A} = {70CA5B1E-4532-45A1-B2B9-8BF6AF88260A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPP", "CPP\CPP.vcxproj", "{70CA5B1E-4532-45A1-B2B9-8BF6AF88260A}"
 EndProject
