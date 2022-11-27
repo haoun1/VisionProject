@@ -74,7 +74,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$bin\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <ExecutablePath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\bin;$(ExecutablePath)</ExecutablePath>
     <IncludePath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\include;$(ExternalIncludePath)</ExternalIncludePath>
@@ -140,6 +140,12 @@
     <ProjectReference Include="..\CPP\CPP.vcxproj">
       <Project>{70ca5b1e-4532-45a1-b2b9-8bf6af88260a}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

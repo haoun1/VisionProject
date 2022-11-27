@@ -7,7 +7,7 @@
 
 namespace CLR
 {
-	void CLR::CPP_Threshold(array<byte>^ pSrcImg, array<byte>^ pDstImg, int nMemW, int nMemH, bool bDark, int nThresh)
+	void CLR_IP::CPP_Threshold(array<byte>^ pSrcImg, array<byte>^ pDstImg, int nMemW, int nMemH, bool bDark, int nThresh)
 	{
 		pin_ptr<byte> pSrc = &pSrcImg[0]; // pin: 주소값 고정
 		pin_ptr<byte> pDst = &pDstImg[0];

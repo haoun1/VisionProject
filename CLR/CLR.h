@@ -11,7 +11,7 @@ using namespace System::Collections::Generic;
 
 namespace CLR
 {
-	public ref class CLR
+	public ref class CLR_IP
 	{
 	protected:
 	public:

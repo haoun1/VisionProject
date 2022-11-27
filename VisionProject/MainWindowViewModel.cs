@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,7 +15,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using CLR;
 namespace VisionProject
 {
     enum ColorMode
@@ -25,6 +26,7 @@ namespace VisionProject
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
+        
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
         long m_Adress;
@@ -80,14 +82,45 @@ namespace VisionProject
             {
                 unsafe
                 {
-                    byte* arrByte = (byte*)RPtr.ToPointer();
-                    long idx = p_mouseMemX + ((long)p_mouseMemY * MapSizeX);
-                    byte b1 = arrByte[idx];
-                    p_pixelData = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
                     int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
                     int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                     p_mouseMemX = p_mouseX * SamplingRate_x;
                     p_mouseMemY = p_mouseY * SamplingRate_y;
+
+                    if (p_mouseMemX > MapSizeX)
+                    {
+                        p_pixelData1 = 0;
+                        p_pixelData2 = 0;
+                        p_pixelData3 = 0;
+                    }
+                    else if (p_mouseMemY > MapSizeY)
+                    {
+                        p_pixelData1 = 0;
+                        p_pixelData2 = 0;
+                        p_pixelData3 = 0;
+                    }
+                    else
+                    {
+
+                        byte* arrByte = (byte*)RPtr.ToPointer();
+                        long idx1 = p_mouseMemX + ((long)p_mouseMemY * MapSizeX);
+                        byte b1 = arrByte[idx1];
+                        p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
+                        if (m_color == ColorMode.Color)
+                        {
+                            long idx2 = MapSizeX * MapSizeY + (p_mouseMemX + ((long)p_mouseMemY * MapSizeX));
+                            long idx3 = 2 * MapSizeX * MapSizeY + (p_mouseMemX + ((long)p_mouseMemY * MapSizeX));
+                            byte b2 = arrByte[idx2];
+                            byte b3 = arrByte[idx3];
+                            p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
+                            p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
+                        }
+                        else
+                        {
+                            p_pixelData2 = 0;
+                            p_pixelData3 = 0;
+                        }
+                    }
                 }
                 m_mouseY = value;
                 OnPropertyChanged();
@@ -116,13 +149,35 @@ namespace VisionProject
             }
         }
 
-        int m_pixelData;
-        public int p_pixelData
+        int m_pixelData1;
+        public int p_pixelData1
         {
-            get => m_pixelData;
+            get => m_pixelData1;
             set
             {
-                m_pixelData = value;
+                m_pixelData1 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        int m_pixelData2;
+        public int p_pixelData2
+        {
+            get => m_pixelData2;
+            set
+            {
+                m_pixelData2 = value;
+                OnPropertyChanged();
+            }
+        }
+
+        int m_pixelData3;
+        public int p_pixelData3
+        {
+            get => m_pixelData3;
+            set
+            {
+                m_pixelData3 = value;
                 OnPropertyChanged();
             }
         }
@@ -186,7 +241,17 @@ namespace VisionProject
 
         public RelayCommand ThresholdCommand
         {
-            get => new RelayCommand(Threshold);
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    Threshold();
+                }
+                catch(Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
         }
 
         /// <summary>
@@ -441,6 +506,22 @@ namespace VisionProject
 
         private void Threshold()
         {
+            if (m_color == ColorMode.Color)
+            {
+                byte[] sourceArray = new byte[MapSizeX * MapSizeY * 3];
+                byte[] resultArray = new byte[MapSizeX * MapSizeY * 3];
+                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY * 3);
+                CLR_IP.CPP_Threshold(sourceArray, resultArray, MapSizeX * 3, MapSizeY, false, 50);
+                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+            }
+            else
+            {
+                byte[] sourceArray = new byte[MapSizeX * MapSizeY];
+                byte[] resultArray = new byte[MapSizeX * MapSizeY];
+                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY);
+                CLR_IP.CPP_Threshold(sourceArray, resultArray, MapSizeX, MapSizeY, false, 50);
+                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+            }
         }
 
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
