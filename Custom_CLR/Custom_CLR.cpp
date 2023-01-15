@@ -10,4 +10,11 @@ namespace Custom_CLR
 		pin_ptr<BYTE> dst = &destination[0];
 		Tool::Custom_Threshold(src, dst, nW, nH, nThresh, bDark);
 	}
+	static void Custom_erode(array<BYTE>^ source, array<BYTE>^ destination, int nW, int nH, int Kernel_Size);
+	void CustomCV::Custom_erode(array<BYTE>^ source, array<BYTE>^ destination, int nW, int nH, int Kernel_Size)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::Custom_erode(src, dst, nW, nH, Kernel_Size);
+	}
 }

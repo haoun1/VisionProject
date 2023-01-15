@@ -45,6 +45,7 @@
                 </MenuItem>
                 <MenuItem Header="Process">
                     <MenuItem Header="Threshold" Command="{Binding ThresholdCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="erode" Command="{Binding erodeCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
             </Menu>
         </Grid>

@@ -525,6 +525,26 @@ namespace VisionProject
             }
         }
 
+        private void erode()
+        {
+            if (m_color == ColorMode.Color)
+            {
+                byte[] sourceArray = new byte[MapSizeX * MapSizeY * 3];
+                byte[] resultArray = new byte[MapSizeX * MapSizeY * 3];
+                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY * 3);
+                CustomCV.Custom_erode(sourceArray, resultArray, MapSizeX * 3, MapSizeY, 3);
+                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+            }
+            else
+            {
+                byte[] sourceArray = new byte[MapSizeX * MapSizeY];
+                byte[] resultArray = new byte[MapSizeX * MapSizeY];
+                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY);
+                CustomCV.Custom_erode(sourceArray, resultArray, MapSizeX, MapSizeY, 3);
+                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+            }
+        }
+
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             var pt = e.GetPosition(sender as IInputElement);
