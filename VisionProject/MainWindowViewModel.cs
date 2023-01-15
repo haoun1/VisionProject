@@ -16,6 +16,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CLR;
+using Custom_CLR;
+
 namespace VisionProject
 {
     enum ColorMode
@@ -26,7 +28,6 @@ namespace VisionProject
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
-        
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
         long m_Adress;
@@ -511,7 +512,7 @@ namespace VisionProject
                 byte[] sourceArray = new byte[MapSizeX * MapSizeY * 3];
                 byte[] resultArray = new byte[MapSizeX * MapSizeY * 3];
                 Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY * 3);
-                CLR_IP.CPP_Threshold(sourceArray, resultArray, MapSizeX * 3, MapSizeY, false, 50);
+                CustomCV.Custom_Threshold(sourceArray, resultArray, MapSizeX * 3, MapSizeY, 50, false);
                 Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
             }
             else
@@ -519,7 +520,7 @@ namespace VisionProject
                 byte[] sourceArray = new byte[MapSizeX * MapSizeY];
                 byte[] resultArray = new byte[MapSizeX * MapSizeY];
                 Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY);
-                CLR_IP.CPP_Threshold(sourceArray, resultArray, MapSizeX, MapSizeY, false, 50);
+                CustomCV.Custom_Threshold(sourceArray, resultArray, MapSizeX, MapSizeY, 50, false);
                 Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
             }
         }

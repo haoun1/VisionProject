@@ -13,7 +13,7 @@ void IP::Threshold(BYTE* pSrc, BYTE* pDst, int nW, int nH, bool bDark, int nThre
 {
 	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
 	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
-
+	
 	if (bDark)
 		cv::threshold(imgSrc, imgDst, nThresh, 255, CV_THRESH_BINARY_INV);
 	else

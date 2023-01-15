@@ -154,6 +154,10 @@
       <Project>{55a5ac26-a612-4b4c-b885-b82123d349a2}</Project>
       <Name>CLR</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Custom_CLR\Custom_CLR.vcxproj">
+      <Project>{74281c0e-d617-4cf6-b2ff-8d4718903ce0}</Project>
+      <Name>Custom_CLR</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Emgu.CV.runtime.windows.4.3.0.3890\build\Emgu.CV.runtime.windows.targets" Condition="Exists('..\packages\Emgu.CV.runtime.windows.4.3.0.3890\build\Emgu.CV.runtime.windows.targets')" />
