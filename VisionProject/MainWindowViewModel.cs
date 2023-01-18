@@ -17,12 +17,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CLR;
 using Custom_CLR;
+using System.Collections.ObjectModel;
 
 namespace VisionProject
 {
     enum ColorMode
     {
-        Mono,
+        R,
+        G,
+        B,
         Color
     }
 
@@ -31,14 +34,28 @@ namespace VisionProject
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
         long m_Adress;
-        double fGB = 1;
+        double fGB = 5;
         double GB = 1024 * 1024 * 1024;
-        int MemoryX = 1000;
-        int MemoryY = 1000;
+        int MemoryX = 40000;
+        int MemoryY = 40000;
         int MapSizeX;
         int MapSizeY;
         int CanvasBit_Width = 800;
-        ColorMode m_color = ColorMode.Mono;
+        ColorMode m_color = ColorMode.R;
+        public ColorMode p_color
+        {
+            get => m_color;
+            set 
+            {
+                if (m_color == value) return;
+                m_color = value;
+                OnPropertyChanged();
+                ImageOpen();
+            }
+        }
+
+        
+
         public int p_CanvasWidth
         {
             get => CanvasBit_Width;
@@ -59,6 +76,9 @@ namespace VisionProject
                 ImageOpen();
             }
         }
+        public ObservableCollection<ColorMode> p_ColorList { get; set; }
+
+
         uint bfOffbits = 0;
         int Bit_Width = 0;
         int Bit_Height = 0;
@@ -106,13 +126,13 @@ namespace VisionProject
                     {
 
                         byte* arrByte = (byte*)RPtr.ToPointer();
-                        long idx1 = p_mouseMemX + ((long)p_mouseMemY * MapSizeX);
+                        long idx1 = p_mouseMemX + ((long)p_mouseMemY * MemoryX);
                         byte b1 = arrByte[idx1];
                         p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
                         if (m_color == ColorMode.Color)
                         {
-                            long idx2 = MapSizeX * MapSizeY + (p_mouseMemX + ((long)p_mouseMemY * MapSizeX));
-                            long idx3 = 2 * MapSizeX * MapSizeY + (p_mouseMemX + ((long)p_mouseMemY * MapSizeX));
+                            long idx2 = MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
+                            long idx3 = 2 * MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
                             byte b2 = arrByte[idx2];
                             byte b3 = arrByte[idx3];
                             p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
@@ -203,6 +223,11 @@ namespace VisionProject
                 m_MMF = MemoryMappedFile.CreateOrOpen("Memory", nPool);
                 MapSizeX = 1000;
                 MapSizeY = 1000;
+                p_ColorList = new ObservableCollection<ColorMode>();
+                p_ColorList.Add(ColorMode.R);
+                p_ColorList.Add(ColorMode.G);
+                p_ColorList.Add(ColorMode.B);
+                p_ColorList.Add(ColorMode.Color);
                 unsafe
                 {
                     byte* p = null;
@@ -259,6 +284,21 @@ namespace VisionProject
             });
         }
 
+        public RelayCommand erodeCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    erode();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
         /// <summary>
         /// 이미지 샘플링을 위한 비트맵소스 읽어오는 함수
         /// </summary>
@@ -298,10 +338,8 @@ namespace VisionProject
                     if (!ReadBitmapInfoHeader(br, ref Bit_Width, ref Bit_Height, ref nByte)) return;
                     MapSizeX = Bit_Width;
                     MapSizeY = Bit_Height;
-                    if (nByte > 1) m_color = ColorMode.Color;
-                    else m_color = ColorMode.Mono;
 
-                    if (m_color == ColorMode.Mono)
+                    if (nByte == 1)
                     {
                         fileRowSize = (Bit_Width * nByte + 3) & ~3; // 파일 내 하나의 열당 너비 사이즈(4의 배수)
                         Rectangle rect = new Rectangle(0, 0, Bit_Width, Bit_Height);
@@ -317,13 +355,13 @@ namespace VisionProject
                             fs.Seek(rect.Left * nByte, SeekOrigin.Current); // Offset이 없으면 주석처리가능
                             fs.Read(abuf, 0, rect.Width * nByte);
 
-                            IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MapSizeX * nByte);
+                            IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
                             Marshal.Copy(abuf, 0, ptr, abuf.Length);
                             fs.Seek(fileRowSize - rect.Right * nByte, SeekOrigin.Current); // Offset이 없으면 주석처리가능
                         }
                         System.Windows.Forms.MessageBox.Show("Image Load Done");
                     }
-                    else if (m_color == ColorMode.Color)
+                    else
                     {
                         fileRowSize = (Bit_Width * nByte + 3) & ~3;
                         abuf = new byte[Bit_Width * nByte];
@@ -336,7 +374,7 @@ namespace VisionProject
                             fs.Read(abuf, 0, Bit_Width * nByte);
                             Parallel.For(0, Bit_Width, new ParallelOptions { MaxDegreeOfParallelism = 12 }, (xx) =>
                             {
-                                Int64 idx = (Int64)yy * MapSizeX + xx;
+                                Int64 idx = (Int64)yy * MemoryX + xx;
                                 ((byte*)RPtr)[idx] = abuf[xx * nByte];
                                 ((byte*)GPtr)[idx] = abuf[xx * nByte + 1];
                                 ((byte*)BPtr)[idx] = abuf[xx * nByte + 2];
@@ -366,7 +404,7 @@ namespace VisionProject
             {
                 switch (m_color)
                 {
-                    case ColorMode.Mono:
+                    case ColorMode.R:
                         {
                             if (RPtr != IntPtr.Zero)
                             {
@@ -381,7 +419,63 @@ namespace VisionProject
                                     {
                                         long pix_x = xx * SamplingRate_x;
                                         byte* arrByte = (byte*)RPtr;
-                                        long idx = pix_x + (pix_y * MapSizeX);
+                                        long idx = pix_x + (pix_y * MemoryX);
+                                        byte pixel = arrByte[idx];
+                                        viewptr[yy, xx, 0] = pixel;
+                                    }
+                                });
+                                p_bitmapSource = ToBitmapSource(view);
+                            }
+                            else
+                            {
+                                System.Windows.Forms.MessageBox.Show("INTPTR Zero");
+                            }
+                        }
+                        break;
+                    case ColorMode.G:
+                        {
+                            if (RPtr != IntPtr.Zero)
+                            {
+                                Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
+                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
+                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
+                                byte[,,] viewptr = view.Data;
+                                Parallel.For(0, p_CanvasHeight, (yy) =>
+                                {
+                                    long pix_y = yy * SamplingRate_y;
+                                    for (int xx = 0; xx < p_CanvasWidth; xx++)
+                                    {
+                                        long pix_x = xx * SamplingRate_x;
+                                        byte* arrByte = (byte*)GPtr;
+                                        long idx = pix_x + (pix_y * MemoryX);
+                                        byte pixel = arrByte[idx];
+                                        viewptr[yy, xx, 0] = pixel;
+                                    }
+                                });
+                                p_bitmapSource = ToBitmapSource(view);
+                            }
+                            else
+                            {
+                                System.Windows.Forms.MessageBox.Show("INTPTR Zero");
+                            }
+                        }
+                        break;
+                    case ColorMode.B:
+                        {
+                            if (RPtr != IntPtr.Zero)
+                            {
+                                Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
+                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
+                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
+                                byte[,,] viewptr = view.Data;
+                                Parallel.For(0, p_CanvasHeight, (yy) =>
+                                {
+                                    long pix_y = yy * SamplingRate_y;
+                                    for (int xx = 0; xx < p_CanvasWidth; xx++)
+                                    {
+                                        long pix_x = xx * SamplingRate_x;
+                                        byte* arrByte = (byte*)BPtr;
+                                        long idx = pix_x + (pix_y * MemoryX);
                                         byte pixel = arrByte[idx];
                                         viewptr[yy, xx, 0] = pixel;
                                     }
@@ -410,7 +504,7 @@ namespace VisionProject
                                 for (int xx = 0; xx < (MapSizeX < p_CanvasWidth ? MapSizeX : p_CanvasWidth); xx++)
                                 {
                                     long pix_x = xx * SamplingRate_x;
-                                    long idx = pix_x + (pix_y * MapSizeX);
+                                    long idx = pix_x + (pix_y * MemoryX);
                                     viewPtr[yy, xx, 0] = RByte[idx];
                                     viewPtr[yy, xx, 1] = GByte[idx];
                                     viewPtr[yy, xx, 2] = BByte[idx];
@@ -514,42 +608,78 @@ namespace VisionProject
 
         private void Threshold()
         {
-            if (m_color == ColorMode.Color)
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
             {
-                byte[] sourceArray = new byte[MapSizeX * MapSizeY * 3];
-                byte[] resultArray = new byte[MapSizeX * MapSizeY * 3];
-                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY * 3);
-                CustomCV.Custom_Threshold(sourceArray, resultArray, MapSizeX * 3, MapSizeY, 50, false);
-                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY ];
+                    resultArray = new byte[MemoryX * MemoryY ];
+                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY );
+                    CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY ];
+                    resultArray = new byte[MemoryX * MemoryY ];
+                    Marshal.Copy(GPtr, sourceArray, 0, MemoryX * MemoryY );
+                    CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY ];
+                    resultArray = new byte[MemoryX * MemoryY ];
+                    Marshal.Copy(BPtr, sourceArray, 0, MemoryX * MemoryY );
+                    CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY * 3);
+                    CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX * 3, MemoryY, 100, false);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
             }
-            else
-            {
-                byte[] sourceArray = new byte[MapSizeX * MapSizeY];
-                byte[] resultArray = new byte[MapSizeX * MapSizeY];
-                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY);
-                CustomCV.Custom_Threshold(sourceArray, resultArray, MapSizeX, MapSizeY, 50, false);
-                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
-            }
+            System.Windows.MessageBox.Show("Threshold Done");
         }
 
         private void erode()
         {
-            if (m_color == ColorMode.Color)
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
             {
-                byte[] sourceArray = new byte[MapSizeX * MapSizeY * 3];
-                byte[] resultArray = new byte[MapSizeX * MapSizeY * 3];
-                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY * 3);
-                CustomCV.Custom_erode(sourceArray, resultArray, MapSizeX * 3, MapSizeY, 3);
-                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY);
+                    CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, MemoryX * MemoryY);
+                    CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, MemoryX * MemoryY);
+                    CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY * 3);
+                    CustomCV.Custom_erode(sourceArray, resultArray, MemoryX * 3, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
             }
-            else
-            {
-                byte[] sourceArray = new byte[MapSizeX * MapSizeY];
-                byte[] resultArray = new byte[MapSizeX * MapSizeY];
-                Marshal.Copy(RPtr, sourceArray, 0, MapSizeX * MapSizeY);
-                CustomCV.Custom_erode(sourceArray, resultArray, MapSizeX, MapSizeY, 3);
-                Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
-            }
+            System.Windows.MessageBox.Show("erode Done");
         }
 
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)

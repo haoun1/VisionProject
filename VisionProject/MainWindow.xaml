@@ -47,6 +47,7 @@
                     <MenuItem Header="Threshold" Command="{Binding ThresholdCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="erode" Command="{Binding erodeCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
+                <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />
             </Menu>
         </Grid>
         <Grid DockPanel.Dock="Bottom" Background="Gray">

@@ -18,12 +18,12 @@ void Tool::Custom_Threshold(BYTE* source, BYTE* destination, int nW, int nH, int
 		{
 			if (bDark)
 			{
-				if (source[i * nW + j] > bDark) destination[i * nW + j] = 0;
+				if (source[i * nW + j] > nThresh) destination[i * nW + j] = 0;
 				else destination[i * nW + j] = 255;
 			}
 			else
 			{
-				if (source[i * nW + j] > bDark) destination[i * nW + j] = 255;
+				if (source[i * nW + j] > nThresh) destination[i * nW + j] = 255;
 				else destination[i * nW + j] = 0;
 			}
 		}
