@@ -33,6 +33,8 @@ namespace VisionProject
         long m_Adress;
         double fGB = 1;
         double GB = 1024 * 1024 * 1024;
+        int MemoryX = 1000;
+        int MemoryY = 1000;
         int MapSizeX;
         int MapSizeY;
         int CanvasBit_Width = 800;
@@ -206,6 +208,8 @@ namespace VisionProject
                     byte* p = null;
                     m_MMF.CreateViewAccessor().SafeMemoryMappedViewHandle.AcquirePointer(ref p);
                     RPtr = new IntPtr(p);
+                    GPtr = (IntPtr)((long)RPtr + (long)(MemoryX * MemoryY));
+                    BPtr = (IntPtr)((long)GPtr + (long)(MemoryX * MemoryY));
                 }
             }
             catch(Exception e)
@@ -292,8 +296,6 @@ namespace VisionProject
 
                     if (!ReadBitmapFileHeader(br, ref bfOffbits)) return;
                     if (!ReadBitmapInfoHeader(br, ref Bit_Width, ref Bit_Height, ref nByte)) return;
-                    GPtr = (IntPtr)((long)RPtr + (long)(Bit_Width * Bit_Height));
-                    BPtr = (IntPtr)((long)GPtr + (long)(Bit_Width * Bit_Height));
                     MapSizeX = Bit_Width;
                     MapSizeY = Bit_Height;
                     if (nByte > 1) m_color = ColorMode.Color;
@@ -323,7 +325,7 @@ namespace VisionProject
                     }
                     else if (m_color == ColorMode.Color)
                     {
-                        fileRowSize = Bit_Width * nByte;
+                        fileRowSize = (Bit_Width * nByte + 3) & ~3;
                         abuf = new byte[Bit_Width * nByte];
                         Rectangle rect = new Rectangle(0, 0, Bit_Width, Bit_Height);
                         fs.Seek(bfOffbits, SeekOrigin.Begin);
@@ -334,11 +336,12 @@ namespace VisionProject
                             fs.Read(abuf, 0, Bit_Width * nByte);
                             Parallel.For(0, Bit_Width, new ParallelOptions { MaxDegreeOfParallelism = 12 }, (xx) =>
                             {
-                                int idx = yy * MapSizeX + xx;
+                                Int64 idx = (Int64)yy * MapSizeX + xx;
                                 ((byte*)RPtr)[idx] = abuf[xx * nByte];
                                 ((byte*)GPtr)[idx] = abuf[xx * nByte + 1];
                                 ((byte*)BPtr)[idx] = abuf[xx * nByte + 2];
                             });
+                            fs.Seek(fileRowSize - rect.Right * nByte, SeekOrigin.Current);
                         }
                         System.Windows.Forms.MessageBox.Show("Image Load Done");
                     }
@@ -426,11 +429,15 @@ namespace VisionProject
 
         private unsafe void ImageClear()
         {
-            byte[] abuf = new byte[MapSizeX * nByte];
+            byte[] abuf = new byte[MemoryX * nByte];
             for (int i = 0; i <= MapSizeY; i++)
             {
-                IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MapSizeX * nByte);
-                Marshal.Copy(abuf, 0, ptr, abuf.Length);
+                IntPtr Rptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                IntPtr Gptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                IntPtr Bptr = new IntPtr(BPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                Marshal.Copy(abuf, 0, Rptr, abuf.Length);
+                Marshal.Copy(abuf, 0, Gptr, abuf.Length);
+                Marshal.Copy(abuf, 0, Bptr, abuf.Length);
             }
             System.Windows.Forms.MessageBox.Show("Image Clear Done");
         }
