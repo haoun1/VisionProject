@@ -1,6 +1,14 @@
 ﻿#pragma once
 #include <string>
+#include "pch.h"
+#include "windows.h"
+#include "memoryapi.h"
+#include <stdio.h>
+#include <list>
+#include <iostream>
 #include "..\\CustomCV\\CustomCV.h"
+
+using namespace System::Collections::Generic;
 
 namespace Custom_CLR 
 {
