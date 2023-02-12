@@ -36,8 +36,8 @@ namespace VisionProject
         long m_Adress;
         double fGB = 5;
         double GB = 1024 * 1024 * 1024;
-        int MemoryX = 40000;
-        int MemoryY = 40000;
+        long MemoryX = 40000;
+        long MemoryY = 40000;
         int MapSizeX;
         int MapSizeY;
         int CanvasBit_Width = 800;
@@ -103,47 +103,81 @@ namespace VisionProject
             get => m_mouseY;
             set
             {
-                unsafe
+                try
                 {
-                    int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                    int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
-                    p_mouseMemX = p_mouseX * SamplingRate_x;
-                    p_mouseMemY = p_mouseY * SamplingRate_y;
+                    unsafe
+                    {
+                        int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
+                        int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
+                        long idx1;
+                        long idx2;
+                        long idx3;
+                        byte b1;
+                        byte b2;
+                        byte b3;
+                        p_mouseMemX = p_mouseX * SamplingRate_x;
+                        p_mouseMemY = p_mouseY * SamplingRate_y;
 
-                    if (p_mouseMemX > MapSizeX)
-                    {
-                        p_pixelData1 = 0;
-                        p_pixelData2 = 0;
-                        p_pixelData3 = 0;
-                    }
-                    else if (p_mouseMemY > MapSizeY)
-                    {
-                        p_pixelData1 = 0;
-                        p_pixelData2 = 0;
-                        p_pixelData3 = 0;
-                    }
-                    else
-                    {
-
-                        byte* arrByte = (byte*)RPtr.ToPointer();
-                        long idx1 = p_mouseMemX + ((long)p_mouseMemY * MemoryX);
-                        byte b1 = arrByte[idx1];
-                        p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
-                        if (m_color == ColorMode.Color)
+                        if (p_mouseMemX > MapSizeX)
                         {
-                            long idx2 = MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
-                            long idx3 = 2 * MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
-                            byte b2 = arrByte[idx2];
-                            byte b3 = arrByte[idx3];
-                            p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
-                            p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
-                        }
-                        else
-                        {
+                            p_pixelData1 = 0;
                             p_pixelData2 = 0;
                             p_pixelData3 = 0;
                         }
+                        else if (p_mouseMemY > MapSizeY)
+                        {
+                            p_pixelData1 = 0;
+                            p_pixelData2 = 0;
+                            p_pixelData3 = 0;
+                        }
+                        else
+                        {
+
+                            byte* arrByte = (byte*)RPtr.ToPointer();
+
+                            switch (m_color)
+                            {
+                                case ColorMode.R:
+                                    idx1 = p_mouseMemX + ((long)p_mouseMemY * MemoryX);
+                                    b1 = arrByte[idx1];
+                                    p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
+                                    p_pixelData2 = 0;
+                                    p_pixelData3 = 0;
+                                    break;
+                                case ColorMode.G:
+                                    idx2 = MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
+                                    b2 = arrByte[idx2];
+                                    p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
+                                    p_pixelData1 = 0;
+                                    p_pixelData3 = 0;
+                                    break;
+                                case ColorMode.B:
+                                    idx3 = 2 * MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
+                                    b3 = arrByte[idx3];
+                                    p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
+                                    p_pixelData1 = 0;
+                                    p_pixelData2 = 0;
+                                    break;
+                                case ColorMode.Color:
+                                    idx1 = p_mouseMemX + ((long)p_mouseMemY * MemoryX);
+                                    b1 = arrByte[idx1];
+                                    p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
+
+                                    idx2 = MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
+                                    b2 = arrByte[idx2];
+                                    p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
+
+                                    idx3 = 2 * MemoryX * MemoryY + (p_mouseMemX + ((long)p_mouseMemY * MemoryX));
+                                    b3 = arrByte[idx3];
+                                    p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
+                                    break;
+                            }
+                        }
                     }
+                }
+                catch(Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
                 }
                 m_mouseY = value;
                 OnPropertyChanged();
@@ -253,6 +287,10 @@ namespace VisionProject
             get => new RelayCommand(ImageClear);
         }
 
+        public RelayCommand ImageSaveCommand
+        {
+            get => new RelayCommand(ImageSave);
+        }
 
         public RelayCommand loadedCommand
         {
@@ -291,6 +329,21 @@ namespace VisionProject
                 try
                 {
                     erode();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
+        public RelayCommand dilateCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    dilate();
                 }
                 catch (Exception e)
                 {
@@ -524,7 +577,7 @@ namespace VisionProject
         private unsafe void ImageClear()
         {
             byte[] abuf = new byte[MemoryX * nByte];
-            for (int i = 0; i <= MapSizeY; i++)
+            for (int i = 0; i < MemoryY; i++)
             {
                 IntPtr Rptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
                 IntPtr Gptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX * nByte);
@@ -534,6 +587,114 @@ namespace VisionProject
                 Marshal.Copy(abuf, 0, Bptr, abuf.Length);
             }
             System.Windows.Forms.MessageBox.Show("Image Clear Done");
+        }
+
+        private unsafe void ImageSave()
+        {
+            try
+            {
+                FileStream fs = null;
+                BinaryWriter bw = null;
+                SaveFileDialog dlg = new SaveFileDialog();
+                byte[] abuf = new byte[MapSizeX];
+                dlg.Filter = "Image Files|*.bmp";
+                dlg.InitialDirectory = @"D:\Images";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    fs = new FileStream(dlg.FileName, FileMode.Create, FileAccess.Write);
+                    bw = new BinaryWriter(fs);
+
+                    switch (m_color)
+                    {
+                        case ColorMode.R:
+                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
+                                return;
+                            }
+                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            if (!WritePalette(bw))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            for (int i = MapSizeY; i >= 0; i--)
+                            {
+                                IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX);
+                                Marshal.Copy(ptr, abuf, 0, abuf.Length);
+                                bw.Write(abuf);
+                            }
+                            break;
+                        case ColorMode.G:
+                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
+                                return;
+                            }
+                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            if (!WritePalette(bw))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            for (int i = MapSizeY; i >= 0; i--)
+                            {
+                                IntPtr ptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX);
+                                Marshal.Copy(ptr, abuf, 0, abuf.Length);
+                                bw.Write(abuf);
+                            }
+                            break;
+                        case ColorMode.B:
+                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
+                                return;
+                            }
+                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            if (!WritePalette(bw))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            for (int i = MapSizeY; i >= 0; i--)
+                            {
+                                IntPtr ptr = new IntPtr(BPtr.ToInt64() + ((long)i) * MemoryX);
+                                Marshal.Copy(ptr, abuf, 0, abuf.Length);
+                                bw.Write(abuf);
+                            }
+                            break;
+                        case ColorMode.Color:
+                            System.Windows.MessageBox.Show("미구현");
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+                else
+                {
+
+                }
+                fs.Close();
+                bw.Close();
+                System.Windows.MessageBox.Show("Image Save Done");
+            }
+            catch(Exception e)
+            {
+                System.Windows.MessageBox.Show(e.Message);
+            }
         }
 
         private bool ReadBitmapFileHeader(BinaryReader br, ref uint bfOffbits)
@@ -553,6 +714,85 @@ namespace VisionProject
 
             return true;
 
+        }
+
+
+        private bool ReadBitmapInfoHeader(BinaryReader br, ref int Bit_Width, ref int Bit_Height, ref int nByte)
+        {
+            if (br == null) return false;
+
+            uint biSize;
+            ushort biPlane;
+
+            biSize = br.ReadUInt32();     // biSize
+            Bit_Width = br.ReadInt32();       // biBit_Width
+            Bit_Height = br.ReadInt32();      // biBit_Height
+            biPlane = br.ReadUInt16();              // biPlanes
+            nByte = br.ReadUInt16() / 8;  // biBitcount
+            br.ReadUInt32();              // biCompression
+            br.ReadUInt32();              // biSizeImage
+            br.ReadInt32();               // biXPelsPerMeter
+            br.ReadInt32();               // biYPelsPerMeter
+            br.ReadUInt32();              // biClrUsed
+            br.ReadUInt32();              // biClrImportant
+
+            return true;
+        }
+
+        private bool WriteBitmapFileHeader(BinaryWriter bw, int nByte, int width, int height)
+        {
+            if (bw == null) return false;
+            int rowSize = (width * nByte + 3) & ~3;
+            int paletteSize = (nByte == 1) ? (256 * 4) : 0;
+
+            int size = 14 + 40 + paletteSize + rowSize * height;
+            int offbit = 14 + 40 + ((nByte == 1) ? (256 * 4) : 0);
+
+            bw.Write(Convert.ToUInt16(0x4d42)); // bfType;
+            bw.Write(Convert.ToUInt32((uint)size)); // bfSize
+            bw.Write(Convert.ToUInt16(0));// bfReserved1
+            bw.Write(Convert.ToUInt16(0)); // bfReserved2
+            bw.Write(Convert.ToUInt32(offbit));// bfOffbits
+
+            return true;
+        }
+
+        bool WriteBitmapInfoHeader(BinaryWriter bw, int nByte, int width, int height, bool isGrayScale )
+        {
+            if (bw == null)
+                return false;
+
+            int biBitCount = nByte * 8;
+
+            bw.Write(Convert.ToUInt32(40));                         // biSize
+            bw.Write(Convert.ToInt32(width));                       // biWidth
+            bw.Write(Convert.ToInt32(height));                      // biHeight
+            bw.Write(Convert.ToUInt16(1));                          // biPlanes
+            bw.Write(Convert.ToUInt16(biBitCount));                 // biBitCount
+            bw.Write(Convert.ToUInt32(0));                          // biCompression
+            bw.Write(Convert.ToUInt32(0));                          // biSizeImage
+            bw.Write(Convert.ToInt32(0));                           // biXPelsPerMeter
+            bw.Write(Convert.ToInt32(0));                           // biYPelsPerMeter
+            bw.Write(Convert.ToUInt32((isGrayScale == true) ? 256 : 0));   // biClrUsed
+            bw.Write(Convert.ToUInt32((isGrayScale == true) ? 256 : 0));   // biClrImportant
+
+            return true;
+        }
+
+        bool WritePalette(BinaryWriter bw)
+        {
+            if (bw == null)
+                return false;
+
+            for (int i = 0; i < 256; i++)
+            {
+                bw.Write(Convert.ToByte(i));
+                bw.Write(Convert.ToByte(i));
+                bw.Write(Convert.ToByte(i));
+                bw.Write(Convert.ToByte(255));
+            }
+
+            return true;
         }
 
         private BitmapSource ToBitmapSource(Image<Gray, byte> img)
@@ -585,26 +825,6 @@ namespace VisionProject
             }
         }
 
-        private bool ReadBitmapInfoHeader(BinaryReader br, ref int Bit_Width, ref int Bit_Height, ref int nByte)
-        {
-            if (br == null) return false;
-
-            uint biSize;
-
-            biSize = br.ReadUInt32();     // biSize
-            Bit_Width = br.ReadInt32();       // biBit_Width
-            Bit_Height = br.ReadInt32();      // biBit_Height
-            br.ReadUInt16();              // biPlanes
-            nByte = br.ReadUInt16() / 8;  // biBitcount
-            br.ReadUInt32();              // biCompression
-            br.ReadUInt32();              // biSizeImage
-            br.ReadInt32();               // biXPelsPerMeter
-            br.ReadInt32();               // biYPelsPerMeter
-            br.ReadUInt32();              // biClrUsed
-            br.ReadUInt32();              // biClrImportant
-
-            return true;
-        }
 
         private void Threshold()
         {
@@ -615,28 +835,28 @@ namespace VisionProject
                 case ColorMode.R:
                     sourceArray = new byte[MemoryX * MemoryY ];
                     resultArray = new byte[MemoryX * MemoryY ];
-                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY );
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY) );
                     CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
                     Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
                     break;
                 case ColorMode.G:
                     sourceArray = new byte[MemoryX * MemoryY ];
                     resultArray = new byte[MemoryX * MemoryY ];
-                    Marshal.Copy(GPtr, sourceArray, 0, MemoryX * MemoryY );
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
                     CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
                     Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
                     break;
                 case ColorMode.B:
                     sourceArray = new byte[MemoryX * MemoryY ];
                     resultArray = new byte[MemoryX * MemoryY ];
-                    Marshal.Copy(BPtr, sourceArray, 0, MemoryX * MemoryY );
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
                     CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX , MemoryY, 100, false);
                     Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
                     break;
                 case ColorMode.Color:
                     sourceArray = new byte[MemoryX * MemoryY * 3];
                     resultArray = new byte[MemoryX * MemoryY * 3];
-                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY * 3);
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
                     CustomCV.Custom_Threshold(sourceArray, resultArray, MemoryX * 3, MemoryY, 100, false);
                     Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
                     break;
@@ -653,33 +873,71 @@ namespace VisionProject
                 case ColorMode.R:
                     sourceArray = new byte[MemoryX * MemoryY];
                     resultArray = new byte[MemoryX * MemoryY];
-                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY);
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
                     CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
                     Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
                     break;
                 case ColorMode.G:
                     sourceArray = new byte[MemoryX * MemoryY];
                     resultArray = new byte[MemoryX * MemoryY];
-                    Marshal.Copy(GPtr, sourceArray, 0, MemoryX * MemoryY);
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
                     CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
                     Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
                     break;
                 case ColorMode.B:
                     sourceArray = new byte[MemoryX * MemoryY];
                     resultArray = new byte[MemoryX * MemoryY];
-                    Marshal.Copy(BPtr, sourceArray, 0, MemoryX * MemoryY);
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
                     CustomCV.Custom_erode(sourceArray, resultArray, MemoryX, MemoryY, 3);
                     Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
                     break;
                 case ColorMode.Color:
                     sourceArray = new byte[MemoryX * MemoryY * 3];
                     resultArray = new byte[MemoryX * MemoryY * 3];
-                    Marshal.Copy(RPtr, sourceArray, 0, MemoryX * MemoryY * 3);
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
                     CustomCV.Custom_erode(sourceArray, resultArray, MemoryX * 3, MemoryY, 3);
                     Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
                     break;
             }
             System.Windows.MessageBox.Show("erode Done");
+        }
+
+        private void dilate()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.Custom_dilate(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.Custom_dilate(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.Custom_dilate(sourceArray, resultArray, MemoryX, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.Custom_dilate(sourceArray, resultArray, MemoryX * 3, MemoryY, 3);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("dilate Done");
         }
 
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)

@@ -42,10 +42,12 @@
                 <MenuItem Header="File" >
                     <MenuItem Header="Load" Command="{Binding ImageLoadCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="Clear" Command="{Binding ImageClearCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="Save" Command="{Binding ImageSaveCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}" />
                 </MenuItem>
                 <MenuItem Header="Process">
                     <MenuItem Header="Threshold" Command="{Binding ThresholdCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="erode" Command="{Binding erodeCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="dilate" Command="{Binding dilateCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
                 <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />
             </Menu>
@@ -67,11 +69,11 @@
                 <Grid HorizontalAlignment="Right" Margin="5,0" Height="15">
                     <StackPanel Orientation="Horizontal" TextElement.Foreground="White">
                         <TextBlock Text="R" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding p_pixelData3}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding p_pixelData1}" Margin="0,0,10,0"/>
                         <TextBlock Text="G" Margin="0,0,10,0"/>
                         <TextBlock Text="{Binding p_pixelData2}" Margin="0,0,10,0"/>
                         <TextBlock Text="B" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding p_pixelData1}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding p_pixelData3}" Margin="0,0,10,0"/>
                     </StackPanel>
                 </Grid>
             </Grid>
