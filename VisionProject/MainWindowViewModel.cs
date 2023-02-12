@@ -580,11 +580,7 @@ namespace VisionProject
             for (int i = 0; i < MemoryY; i++)
             {
                 IntPtr Rptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
-                IntPtr Gptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX * nByte);
-                IntPtr Bptr = new IntPtr(BPtr.ToInt64() + ((long)i) * MemoryX * nByte);
                 Marshal.Copy(abuf, 0, Rptr, abuf.Length);
-                Marshal.Copy(abuf, 0, Gptr, abuf.Length);
-                Marshal.Copy(abuf, 0, Bptr, abuf.Length);
             }
             System.Windows.Forms.MessageBox.Show("Image Clear Done");
         }
@@ -622,7 +618,7 @@ namespace VisionProject
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
                             }
-                            for (int i = MapSizeY; i >= 0; i--)
+                            for (int i = MapSizeY - 1; i >= 0; i--)
                             {
                                 IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX);
                                 Marshal.Copy(ptr, abuf, 0, abuf.Length);
