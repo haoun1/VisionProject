@@ -16,7 +16,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CLR;
-using Custom_CLR;
 using System.Collections.ObjectModel;
 
 namespace VisionProject

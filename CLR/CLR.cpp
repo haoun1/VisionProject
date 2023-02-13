@@ -7,14 +7,49 @@
 
 namespace CLR
 {
-	void CLR_IP::CPP_Threshold(array<byte>^ pSrcImg, array<byte>^ pDstImg, int nMemW, int nMemH, bool bDark, int nThresh)
+	void CustomCV::Custom_Threshold(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int nThresh, bool bDark)
 	{
-		pin_ptr<byte> pSrc = &pSrcImg[0]; // pin: 주소값 고정
-		pin_ptr<byte> pDst = &pDstImg[0];
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::Custom_Threshold(src, dst, nW, nH, nThresh, bDark);
+	}
+	void CustomCV::Custom_erode(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::Custom_erode(src, dst, nW, nH, Kernel_Size);
+	}
+	void CustomCV::Custom_dilate(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::Custom_dilate(src, dst, nW, nH, Kernel_Size);
+	}
+	array<DataLabel^>^ CustomCV::CV2_Labeling(array<BYTE>^ source, array<BYTE>^ mask, int width, int height, bool bDark)
+	{
+		pin_ptr<BYTE> pin_src = &source[0];
+		pin_ptr<BYTE> pin_mask = &mask[0];
 
-		IP::Threshold(pSrc, pDst, nMemW, nMemH, bDark, nThresh);
+		std::vector<LabeledData> vec;
 
-		pSrc = nullptr;
-		pDst = nullptr;
+		Tool::CV2_Labeling(pin_src, pin_mask, vec, width, height, bDark);
+
+		array<DataLabel^>^ res = gcnew array<DataLabel^>(vec.size());
+
+		for (int i = 0; i < res->Length; i++)
+		{
+			res[i]->area = vec[i].area;
+			res[i]->boundTop = vec[i].bound.top;
+			res[i]->boundBottom = vec[i].bound.bottom;
+			res[i]->boundLeft = vec[i].bound.bottom;
+			res[i]->boundRight = vec[i].bound.right;
+			res[i]->width = vec[i].width;
+			res[i]->height = vec[i].height;
+			res[i]->value = vec[i].value;
+			res[i]->centerX = vec[i].centerX;
+			res[i]->centerY = vec[i].centerY;
+		}
+
+		return res;
 	}
 }

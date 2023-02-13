@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="CPP.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TypeDefines.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CPP.cpp" />

@@ -11,10 +11,31 @@ using namespace System::Collections::Generic;
 
 namespace CLR
 {
-	public ref class CLR_IP
+	public ref class DataLabel
 	{
-	protected:
 	public:
-		static void CPP_Threshold(array<byte>^ pSrcImg, array<byte>^ pDstImg, int nMemW, int nMemH, bool bDark, int nThresh);
+		double centerX;
+		double centerY;
+		int boundTop;
+		int boundBottom;
+		int boundLeft;
+		int boundRight;
+		double width;
+		double height;
+		double area;
+		double value;
+	};
+
+	public ref class CustomCV
+	{
+	public:
+		static void Custom_Threshold(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int nThresh, bool bDark);
+		static void Custom_erode(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size);
+		static void Custom_dilate(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size);
+		static array<DataLabel^>^ CV2_Labeling(array<BYTE>^ source, array<BYTE>^ mask, int width, int height, bool bDark);
+	};
+	public ref class CustomAlgo
+	{
+
 	};
 }
