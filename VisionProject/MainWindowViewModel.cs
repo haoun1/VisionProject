@@ -350,6 +350,80 @@ namespace VisionProject
                 }
             });
         }
+        public RelayCommand CV2_GaussianCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    CV2_Gaussian();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
+        public RelayCommand AI_GaussianCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    AI_Gaussian();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
+        public RelayCommand CV2_LaplaceCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    CV2_Laplace();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
+        public RelayCommand AI_LaplaceCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    AI_Laplace();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
+        public RelayCommand AI_HPFCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    AI_FFT_HPF();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
 
         /// <summary>
         /// 이미지 샘플링을 위한 비트맵소스 읽어오는 함수
@@ -406,8 +480,24 @@ namespace VisionProject
                             Array.Clear(abuf, 0, rect.Width * nByte);
                             fs.Seek(rect.Left * nByte, SeekOrigin.Current); // Offset이 없으면 주석처리가능
                             fs.Read(abuf, 0, rect.Width * nByte);
-
-                            IntPtr ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                            IntPtr ptr = new IntPtr();
+                            switch (m_color)
+                            {
+                                case ColorMode.R:
+                                    ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    break;
+                                case ColorMode.G:
+                                    ptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    break;
+                                case ColorMode.B:
+                                    ptr = new IntPtr(BPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    break;
+                                case ColorMode.Color:
+                                    ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    break;
+                                default:
+                                    break;
+                            }
                             Marshal.Copy(abuf, 0, ptr, abuf.Length);
                             fs.Seek(fileRowSize - rect.Right * nByte, SeekOrigin.Current); // Offset이 없으면 주석처리가능
                         }
@@ -933,6 +1023,196 @@ namespace VisionProject
                     break;
             }
             System.Windows.MessageBox.Show("dilate Done");
+        }
+
+        private void CV2_Gaussian()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5,1);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("Gaussian Done");
+        }
+
+        private void AI_Gaussian()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_GaussianFilter(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.AI_GaussianFilter(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY, 5, 1);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("Gaussian Done");
+        }
+
+        private void CV2_Laplace()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("Laplace Done");
+        }
+
+        private void AI_Laplace()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_Laplacian(sourceArray, resultArray, (int)MemoryX, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.AI_Laplacian(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("Laplace Done");
+        }
+
+        private void AI_FFT_HPF()
+        {
+            byte[] sourceArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_HPF(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 100);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_HPF(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 100);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    CustomCV.AI_HPF(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, 100);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    CustomCV.AI_HPF(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY, 100);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("HPF Done");
         }
 
         public void MouseMove(object sender, System.Windows.Input.MouseEventArgs e)

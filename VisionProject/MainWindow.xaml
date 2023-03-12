@@ -48,6 +48,11 @@
                     <MenuItem Header="Threshold" Command="{Binding ThresholdCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="erode" Command="{Binding erodeCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="dilate" Command="{Binding dilateCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="CV2_Gaussian" Command="{Binding CV2_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_Gaussian" Command="{Binding AI_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="CV2_Laplace" Command="{Binding CV2_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_Laplace" Command="{Binding AI_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_HPF" Command="{Binding AI_HPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
                 <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />
             </Menu>

@@ -25,6 +25,42 @@ namespace CLR
 		pin_ptr<BYTE> dst = &destination[0];
 		Tool::Custom_dilate(src, dst, nW, nH, Kernel_Size);
 	}
+
+	void CustomCV::CV2_GaussianFilter(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int size, double sigma)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::CV2_GaussianFilter(src, dst, width, height, size, sigma);
+	}
+
+	void CustomCV::AI_GaussianFilter(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int size, double sigma)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::AI_GaussianFilter(src, dst, width, height, size, sigma);
+	}
+
+	void CustomCV::CV2_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::CV2_Laplacian(src, dst, width, height);
+	}
+
+	void CustomCV::AI_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::AI_Laplacian(src, dst, width, height);
+	}
+
+	void CustomCV::AI_HPF(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, double R)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::AI_HPF(src, dst, width, height, R);
+	}
+
 	array<DataLabel^>^ CustomCV::CV2_Labeling(array<BYTE>^ source, array<BYTE>^ mask, int width, int height, bool bDark)
 	{
 		pin_ptr<BYTE> pin_src = &source[0];
