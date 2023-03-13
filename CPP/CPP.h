@@ -22,6 +22,7 @@ public:
 	static void AI_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH);
 	static void AI_DFT(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R);
 	static void AI_HPF(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R);
+	static void AI_TemplateMatching(BYTE* pSrc, BYTE* pDst, int nW, int nH, BYTE* pTemp, int nTempW, int nTempH,int method);
 };
 bool KernelCheck_erode(BYTE* source, long long idx, int kSize, long long width, long long height);
 bool KernelCheck_dilate(BYTE* source, long long idx, int kSize, long long width, long long height);

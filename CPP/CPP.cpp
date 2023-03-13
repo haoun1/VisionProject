@@ -368,7 +368,25 @@ void Tool::AI_DFT(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R)
 	waitKey();
 }
 
-
+//Template Matching
+void Tool::AI_TemplateMatching(BYTE* pSrc, BYTE* pDst, int nW, int nH, BYTE* pTemp, int nTempW, int nTempH, int method)
+{
+	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
+	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
+	Mat imgTemp = Mat(nTempH, nTempW, CV_8UC1, pTemp);
+	Mat imgResult;
+	matchTemplate(imgSrc, imgTemp, imgResult, method);
+	normalize(imgResult, imgResult, 0, 1, NORM_MINMAX, -1, Mat());
+	double minVal, maxVal;
+	Point minLoc, maxLoc, matchLoc;
+	minMaxLoc(imgResult, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+	matchLoc = maxLoc;
+	rectangle(imgSrc, matchLoc, Point(matchLoc.x + imgTemp.cols, matchLoc.y + imgTemp.rows), Scalar::all(0), 2, 8, 0);
+	imshow("imgSrc", imgSrc);
+	imshow("imgTemp", imgTemp);
+	imshow("imgResult", imgResult);
+	waitKey();
+}
 
 
 

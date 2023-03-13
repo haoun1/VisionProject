@@ -61,6 +61,14 @@ namespace CLR
 		Tool::AI_HPF(src, dst, width, height, R);
 	}
 
+	void CustomCV::AI_TemplateMatching(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, array<BYTE>^ templateImg, int templateWidth, int templateHeight, int method)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		pin_ptr<BYTE> temp = &templateImg[0];
+		Tool::AI_TemplateMatching(src, dst, width, height, temp, templateWidth, templateHeight, method);
+	}
+
 	array<DataLabel^>^ CustomCV::CV2_Labeling(array<BYTE>^ source, array<BYTE>^ mask, int width, int height, bool bDark)
 	{
 		pin_ptr<BYTE> pin_src = &source[0];

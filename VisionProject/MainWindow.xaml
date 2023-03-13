@@ -53,6 +53,7 @@
                     <MenuItem Header="CV2_Laplace" Command="{Binding CV2_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_Laplace" Command="{Binding AI_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_HPF" Command="{Binding AI_HPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_Template Match" Command="{Binding AI_TMCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
                 <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />
             </Menu>

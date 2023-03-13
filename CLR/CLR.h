@@ -38,6 +38,7 @@ namespace CLR
 		static void CV2_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
 		static void AI_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
 		static void AI_HPF(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, double r);
+		static void AI_TemplateMatching(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, array<BYTE>^ tempImg, int TempW, int TempH,int method);
 	};
 	public ref class CustomAlgo
 	{

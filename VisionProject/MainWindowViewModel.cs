@@ -25,7 +25,8 @@ namespace VisionProject
         R,
         G,
         B,
-        Color
+        Color,
+        Template
     }
 
     class MainWindowViewModel : INotifyPropertyChanged
@@ -37,6 +38,8 @@ namespace VisionProject
         double GB = 1024 * 1024 * 1024;
         long MemoryX = 40000;
         long MemoryY = 40000;
+        long TempX = 10000;
+        long TempY = 10000;
         int MapSizeX;
         int MapSizeY;
         int CanvasBit_Width = 800;
@@ -83,7 +86,7 @@ namespace VisionProject
         int Bit_Height = 0;
         int nByte = 0;
         BitmapSource m_bitmapSource;
-        IntPtr RPtr, GPtr, BPtr;
+        IntPtr RPtr, GPtr, BPtr, TPtr;
 
         int m_mouseX;
         public int p_mouseX
@@ -261,6 +264,7 @@ namespace VisionProject
                 p_ColorList.Add(ColorMode.G);
                 p_ColorList.Add(ColorMode.B);
                 p_ColorList.Add(ColorMode.Color);
+                p_ColorList.Add(ColorMode.Template);
                 unsafe
                 {
                     byte* p = null;
@@ -268,6 +272,7 @@ namespace VisionProject
                     RPtr = new IntPtr(p);
                     GPtr = (IntPtr)((long)RPtr + (long)(MemoryX * MemoryY));
                     BPtr = (IntPtr)((long)GPtr + (long)(MemoryX * MemoryY));
+                    TPtr = (IntPtr)((long)BPtr + (long)(MemoryX * MemoryY));
                 }
             }
             catch(Exception e)
@@ -425,6 +430,21 @@ namespace VisionProject
             });
         }
 
+        public RelayCommand AI_TMCommand
+        {
+            get => new RelayCommand(() =>
+            {
+                try
+                {
+                    AI_TM();
+                }
+                catch (Exception e)
+                {
+                    System.Windows.MessageBox.Show(e.Message);
+                }
+            });
+        }
+
         /// <summary>
         /// 이미지 샘플링을 위한 비트맵소스 읽어오는 함수
         /// </summary>
@@ -494,6 +514,9 @@ namespace VisionProject
                                     break;
                                 case ColorMode.Color:
                                     ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    break;
+                                case ColorMode.Template:
+                                    ptr = new IntPtr(TPtr.ToInt64() + ((long)i) * MemoryX * nByte);
                                     break;
                                 default:
                                     break;
@@ -653,6 +676,34 @@ namespace VisionProject
                                 }
                             });
                             p_bitmapSource = ToBitmapSource(view);
+                        }
+                        break;
+                    case ColorMode.Template:
+                        {
+                            if (TPtr != IntPtr.Zero)
+                            {
+                                Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
+                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
+                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
+                                byte[,,] viewptr = view.Data;
+                                Parallel.For(0, p_CanvasHeight, (yy) =>
+                                {
+                                    long pix_y = yy * SamplingRate_y;
+                                    for (int xx = 0; xx < p_CanvasWidth; xx++)
+                                    {
+                                        long pix_x = xx * SamplingRate_x;
+                                        byte* arrByte = (byte*)BPtr;
+                                        long idx = pix_x + (pix_y * TempX);
+                                        byte pixel = arrByte[idx];
+                                        viewptr[yy, xx, 0] = pixel;
+                                    }
+                                });
+                                p_bitmapSource = ToBitmapSource(view);
+                            }
+                            else
+                            {
+                                System.Windows.Forms.MessageBox.Show("INTPTR Zero");
+                            }
                         }
                         break;
                 }
@@ -1209,6 +1260,53 @@ namespace VisionProject
                     resultArray = new byte[MemoryX * MemoryY * 3];
                     Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
                     CustomCV.AI_HPF(sourceArray, resultArray, (int)MemoryX * 3, (int)MemoryY, 100);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+            }
+            System.Windows.MessageBox.Show("HPF Done");
+        }
+
+        private void AI_TM()
+        {
+            byte[] sourceArray;
+            byte[] templateArray;
+            byte[] resultArray;
+            switch (m_color)
+            {
+                case ColorMode.R:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    templateArray = new byte[TempX * TempY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    Marshal.Copy(TPtr, templateArray, 0, Convert.ToInt32(TempX * TempY));
+                    CustomCV.AI_TemplateMatching(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, templateArray, (int)TempX, (int)TempY, 5);
+                    Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
+                    break;
+                case ColorMode.G:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    templateArray = new byte[TempX * TempY];
+                    Marshal.Copy(GPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    Marshal.Copy(TPtr, templateArray, 0, Convert.ToInt32(TempX * TempY));
+                    CustomCV.AI_TemplateMatching(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, templateArray, (int)TempX, (int)TempY, 5);
+                    Marshal.Copy(resultArray, 0, GPtr, resultArray.Length);
+                    break;
+                case ColorMode.B:
+                    sourceArray = new byte[MemoryX * MemoryY];
+                    resultArray = new byte[MemoryX * MemoryY];
+                    templateArray = new byte[TempX * TempY];
+                    Marshal.Copy(BPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY));
+                    Marshal.Copy(TPtr, templateArray, 0, Convert.ToInt32(TempX * TempY));
+                    CustomCV.AI_TemplateMatching(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, templateArray, (int)TempX, (int)TempY, 5);
+                    Marshal.Copy(resultArray, 0, BPtr, resultArray.Length);
+                    break;
+                case ColorMode.Color:
+                    sourceArray = new byte[MemoryX * MemoryY * 3];
+                    resultArray = new byte[MemoryX * MemoryY * 3];
+                    templateArray = new byte[TempX * TempY];
+                    Marshal.Copy(RPtr, sourceArray, 0, Convert.ToInt32(MemoryX * MemoryY * 3));
+                    Marshal.Copy(TPtr, templateArray, 0, Convert.ToInt32(TempX * TempY * 3));
+                    CustomCV.AI_TemplateMatching(sourceArray, resultArray, (int)MemoryX, (int)MemoryY, templateArray, (int)TempX, (int)TempY, 5);
                     Marshal.Copy(resultArray, 0, RPtr, resultArray.Length);
                     break;
             }
