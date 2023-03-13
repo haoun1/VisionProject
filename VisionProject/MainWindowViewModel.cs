@@ -34,12 +34,12 @@ namespace VisionProject
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
         long m_Adress;
-        double fGB = 5;
+        double fGB = 8;
         double GB = 1024 * 1024 * 1024;
-        long MemoryX = 40000;
-        long MemoryY = 40000;
-        long TempX = 10000;
-        long TempY = 10000;
+        long MemoryX = 1000;
+        long MemoryY = 1000;
+        long TempX = 72;
+        long TempY = 48;
         int MapSizeX;
         int MapSizeY;
         int CanvasBit_Width = 800;
@@ -516,7 +516,7 @@ namespace VisionProject
                                     ptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
                                     break;
                                 case ColorMode.Template:
-                                    ptr = new IntPtr(TPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                                    ptr = new IntPtr(TPtr.ToInt64() + ((long)i) * TempX * nByte);
                                     break;
                                 default:
                                     break;
@@ -692,7 +692,7 @@ namespace VisionProject
                                     for (int xx = 0; xx < p_CanvasWidth; xx++)
                                     {
                                         long pix_x = xx * SamplingRate_x;
-                                        byte* arrByte = (byte*)BPtr;
+                                        byte* arrByte = (byte*)TPtr;
                                         long idx = pix_x + (pix_y * TempX);
                                         byte pixel = arrByte[idx];
                                         viewptr[yy, xx, 0] = pixel;
@@ -716,11 +716,43 @@ namespace VisionProject
 
         private unsafe void ImageClear()
         {
-            byte[] abuf = new byte[MemoryX * nByte];
-            for (int i = 0; i < MemoryY; i++)
+            byte[] abuf;
+            switch (m_color)
             {
-                IntPtr Rptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
-                Marshal.Copy(abuf, 0, Rptr, abuf.Length);
+                case ColorMode.R:
+                    abuf = new byte[MemoryX * nByte];
+                    for (int i = 0; i < MemoryY; i++)
+                    {
+                        IntPtr Rptr = new IntPtr(RPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                        Marshal.Copy(abuf, 0, Rptr, abuf.Length);
+                    }
+                    break;
+                case ColorMode.G:
+                    abuf = new byte[MemoryX * nByte];
+                    for (int i = 0; i < MemoryY; i++)
+                    {
+                        IntPtr Gptr = new IntPtr(GPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                        Marshal.Copy(abuf, 0, Gptr, abuf.Length);
+                    }
+                    break;
+                case ColorMode.B:
+                    abuf = new byte[MemoryX * nByte];
+                    for (int i = 0; i < MemoryY; i++)
+                    {
+                        IntPtr Bptr = new IntPtr(BPtr.ToInt64() + ((long)i) * MemoryX * nByte);
+                        Marshal.Copy(abuf, 0, Bptr, abuf.Length);
+                    }
+                    break;
+                case ColorMode.Template:
+                    abuf = new byte[TempX * nByte];
+                    for (int i = 0; i < MemoryY; i++)
+                    {
+                        IntPtr Tptr = new IntPtr(TPtr.ToInt64() + ((long)i) * TempX * nByte);
+                        Marshal.Copy(abuf, 0, Tptr, abuf.Length);
+                    }
+                    break;
+                default:
+                    break;
             }
             System.Windows.Forms.MessageBox.Show("Image Clear Done");
         }
@@ -813,6 +845,30 @@ namespace VisionProject
                             break;
                         case ColorMode.Color:
                             System.Windows.MessageBox.Show("미구현");
+                            break;
+                        case ColorMode.Template:
+                            abuf = new byte[MapSizeX / 10];
+                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX / 10, MapSizeY / 10))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
+                                return;
+                            }
+                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX / 10, MapSizeY / 10, false))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            if (!WritePalette(bw))
+                            {
+                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
+                                return;
+                            }
+                            for (int i = MapSizeY; i >= MapSizeY / 10; i--)
+                            {
+                                IntPtr ptr = new IntPtr(TPtr.ToInt64() + ((long)i) * TempX);
+                                Marshal.Copy(ptr, abuf, 0, abuf.Length);
+                                bw.Write(abuf);
+                            }
                             break;
                         default:
                             break;
