@@ -50,9 +50,13 @@
                     <MenuItem Header="dilate" Command="{Binding dilateCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Gaussian" Command="{Binding CV2_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_Gaussian" Command="{Binding AI_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="CV2_Hequal" Command="{Binding CV2_HequalCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_Hequal" Command="{Binding AI_HequalCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="CV2_Otsu" Command="{Binding CV2_OtsuCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_Otsu" Command="{Binding AI_OtsuCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Laplace" Command="{Binding CV2_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_Laplace" Command="{Binding AI_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_HPF" Command="{Binding AI_HPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="AI_LPF" Command="{Binding AI_LPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_Template Match" Command="{Binding AI_TMCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
                 <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />

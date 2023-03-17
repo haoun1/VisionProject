@@ -16,12 +16,16 @@ public:
 	static void Custom_erode(BYTE* source, BYTE* destination, long long nW, long long nH, int Kernel_Size);
 	static void Custom_dilate(BYTE* source, BYTE* destination, long long nW, long long nH, int Kernel_Size);
 	static void CV2_Labeling(BYTE* pSrc, BYTE* pBin, std::vector<LabeledData>& vtOutLabeled, int nW, int nH, bool bDark);
+
+	static void CV2_OtsuThresholding(BYTE* pSrc, BYTE* pDst, int nW, int nH);
+	static void AI_OtsuThresholding(BYTE* pSrc, BYTE* pDst, int nW, int nH);
+	static void CV2_HistogramEqualization(BYTE* pSrc, BYTE* pDst, int nW, int nH);
+	static void AI_HistogramEqualization(BYTE* pSrc, BYTE* pDst, int nW, int nH);
 	static void CV2_GaussianFilter(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nSize, double dSigma);
 	static void AI_GaussianFilter(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nSize, double dSigma);
 	static void CV2_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH);
 	static void AI_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH);
-	static void AI_DFT(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R);
-	static void AI_HPF(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R);
+	static void CV2_FFTLowPassFiltering(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nD0);
 	static void AI_TemplateMatching(BYTE* pSrc, BYTE* pDst, int nW, int nH, BYTE* pTemp, int nTempW, int nTempH,int method);
 };
 bool KernelCheck_erode(BYTE* source, long long idx, int kSize, long long width, long long height);

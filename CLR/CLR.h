@@ -33,11 +33,15 @@ namespace CLR
 		static void Custom_erode(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size);
 		static void Custom_dilate(array<BYTE>^ source, array<BYTE>^ destination, long long nW, long long nH, int Kernel_Size);
 		static array<DataLabel^>^ CV2_Labeling(array<BYTE>^ source, array<BYTE>^ mask, int width, int height, bool bDark);
+		static void CV2_HistogramEqualization(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
+		static void AI_HistogramEqualization(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
+		static void CV2_OtsuThresholding(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
+		static void AI_OtsuThresholding(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
 		static void CV2_GaussianFilter(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int size, double sigma);
 		static void AI_GaussianFilter(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int size, double sigma);
 		static void CV2_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
 		static void AI_Laplacian(array<BYTE>^ source, array<BYTE>^ destination, int width, int height);
-		static void AI_HPF(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, double r);
+		static void CV2_FFTLowPassFiltering(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int d0);
 		static void AI_TemplateMatching(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, array<BYTE>^ tempImg, int TempW, int TempH,int method);
 	};
 	public ref class CustomAlgo

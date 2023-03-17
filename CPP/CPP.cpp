@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "CPP.h"
 
 
@@ -41,24 +41,19 @@ void Tool::CV2_GaussianFilter(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nSize,
 //GaussianFilter without opencv
 void Tool::AI_GaussianFilter(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nSize, double dSigma)
 {
-	int nSize2 = nSize / 2;
-	double dSigma2 = dSigma * dSigma;
-	double dSum = 0;
 	double* pGaussian = new double[nSize * nSize];
+	double dSum = 0;
 	for (int i = 0; i < nSize; i++)
 	{
 		for (int j = 0; j < nSize; j++)
 		{
-			pGaussian[i * nSize + j] = exp(-(i * i + j * j) / (2 * dSigma2)) / (2 * CV_PI * dSigma2);
+			pGaussian[i * nSize + j] = exp(-(pow(i - nSize / 2, 2) + pow(j - nSize / 2, 2)) / (2 * pow(dSigma, 2)));
 			dSum += pGaussian[i * nSize + j];
 		}
 	}
-	for (int i = 0; i < nSize; i++)
+	for (int i = 0; i < nSize * nSize; i++)
 	{
-		for (int j = 0; j < nSize; j++)
-		{
-			pGaussian[i * nSize + j] /= dSum;
-		}
+		pGaussian[i] /= dSum;
 	}
 	for (int i = 0; i < nH; i++)
 	{
@@ -69,13 +64,8 @@ void Tool::AI_GaussianFilter(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nSize, 
 			{
 				for (int l = 0; l < nSize; l++)
 				{
-					int nX = j + l - nSize2;
-					int nY = i + k - nSize2;
-					if (nX < 0) nX = 0;
-					if (nX >= nW) nX = nW - 1;
-					if (nY < 0) nY = 0;
-					if (nY >= nH) nY = nH - 1;
-					dSum += pGaussian[k * nSize + l] * pSrc[nY * nW + nX];
+					if (i + k - nSize / 2 < 0 || i + k - nSize / 2 >= nH || j + l - nSize / 2 < 0 || j + l - nSize / 2 >= nW) continue;
+					dSum += pSrc[(i + k - nSize / 2) * nW + j + l - nSize / 2] * pGaussian[k * nSize + l];
 				}
 			}
 			pDst[i * nW + j] = (BYTE)dSum;
@@ -129,12 +119,12 @@ void Tool::CV2_Labeling(BYTE* pSrc, BYTE* pBin, std::vector<LabeledData>& vtOutL
 	cv::bitwise_and(imgSrc, imgBin, imgMask);
 	std::vector<std::vector<Point>> contours; //outputArray of Arrays
 	std::vector<Vec4i> hierarchy; //outputArray
-								  //4∞≥¿« int 0=¥Ÿ¿Ωø‹∞˚º±π¯»£ 1=¿Ã¿¸ 2=¿⁄Ωƒ 3=∫Œ∏
+								  //4Í∞úÏùò int 0=Îã§ÏùåÏô∏Í≥ΩÏÑ†Î≤àÌò∏ 1=Ïù¥Ï†Ñ 2=ÏûêÏãù 3=Î∂ÄÎ™®
 	cv::findContours(imgBin, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 	Rect bounding_rect;
 	for (int i = 0; i < contours.size(); i++)
 	{
-		if (hierarchy[i][3] != -1) continue;//∫Œ∏ Contour∞° ¿÷¿∏∏È pass
+		if (hierarchy[i][3] != -1) continue;//Î∂ÄÎ™® ContourÍ∞Ä ÏûàÏúºÎ©¥ pass
 		bounding_rect = cv::boundingRect(contours[i]);
 
 		Mat defectROI = imgMask(bounding_rect);
@@ -248,7 +238,7 @@ bool KernelCheck_erode(BYTE* source, long long idx, int kSize, long long width, 
 	return true;
 }
 
-//∂Û«√∂ÛΩ∫ « ≈Õ
+//ÎùºÌîåÎùºÏä§ ÌïÑÌÑ∞
 void Tool::CV2_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH)
 {
 	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
@@ -256,7 +246,7 @@ void Tool::CV2_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH)
 	cv::Laplacian(imgSrc, imgDst, CV_8UC1, 3);
 }
 
-//OpenCV ªÁøÎæ»«œ¥¬ ∂Û«√∂ÛΩ∫ « ≈Õ
+//OpenCV ÏÇ¨Ïö©ÏïàÌïòÎäî ÎùºÌîåÎùºÏä§ ÌïÑÌÑ∞
 void Tool::AI_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH)
 {
 	int nSize = nW * nH;
@@ -296,54 +286,112 @@ void Tool::AI_Laplacian(BYTE* pSrc, BYTE* pDst, int nW, int nH)
 	delete[] pTemp;
 }
 
-
-//HPF
-void Tool::AI_HPF(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R)
-{
-	// ¿‘∑¬ øµªÛ¿ª 2¬˜ø¯ Mat ∞¥√º∑Œ ∫Ø»Ø
-	cv::Mat srcMat(nH, nW, CV_8UC1, pSrc);
-
-	// ∞·∞˙ øµªÛ¿ª 2¬˜ø¯ Mat ∞¥√º∑Œ ∫Ø»Ø
-	cv::Mat dstMat(nH, nW, CV_8UC1, pDst);
-
-	// ¿‘∑¬ øµªÛ¿ª «™∏Æø° ∫Ø»Ø
-	cv::Mat fftInput;
-	srcMat.convertTo(fftInput, CV_32FC1, 1.0 / 255.0); // ¡§±‘»≠
-	cv::dft(fftInput, fftInput, cv::DFT_COMPLEX_OUTPUT);
-
-	// ¡÷∆ƒºˆ øµø™ « ≈Õ∏µ
-	cv::Mat filter(fftInput.size(), CV_32FC2);
-	cv::Point center = cv::Point(fftInput.cols / 2, fftInput.rows / 2);
-	double radius = R * std::min(center.x, center.y);
-	for (int i = 0; i < filter.rows; ++i) {
-		for (int j = 0; j < filter.cols; ++j) {
-			double distance = cv::norm(cv::Point(j, i) - center);
-			if (distance > radius) {
-				filter.at<cv::Vec2f>(i, j) = cv::Vec2f(0.0, 0.0);
-			}
-			else {
-				filter.at<cv::Vec2f>(i, j) = cv::Vec2f(1.0, 1.0);
-			}
-		}
-	}
-	cv::mulSpectrums(fftInput, filter, fftInput, 0);
-
-	// ø™«™∏Æø° ∫Ø»Ø
-	cv::idft(fftInput, fftInput, cv::DFT_REAL_OUTPUT | cv::DFT_SCALE);
-
-	// ∞·∞˙ øµªÛ ∫πªÁ
-	fftInput.convertTo(dstMat, CV_8UC1, 255.0);
-}
-
-void Tool::AI_DFT(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R)
+//Template Matching
+void Tool::AI_TemplateMatching(BYTE* pSrc, BYTE* pDst, int nW, int nH, BYTE* pTemp, int nTempW, int nTempH, int method)
 {
 	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
 	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
+	Mat imgTemp = Mat(nTempH, nTempW, CV_8UC1, pTemp);
+	Mat imgResult;
+	matchTemplate(imgSrc, imgTemp, imgResult, method);
+	normalize(imgResult, imgResult, 0, 1, NORM_MINMAX, -1, Mat());
+	double minVal, maxVal;
+	Point minLoc, maxLoc, matchLoc;
+	minMaxLoc(imgResult, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+	matchLoc = maxLoc;
+	rectangle(imgDst, matchLoc, Point(matchLoc.x + imgTemp.cols, matchLoc.y + imgTemp.rows), Scalar::all(0), 2, 8, 0);
+	waitKey();
+}
+
+//Histogram equalization
+void Tool::CV2_HistogramEqualization(BYTE* pSrc, BYTE* pDst, int nW, int nH)
+{
+	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
+	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
+	equalizeHist(imgSrc, imgDst);
+}
+
+//Histogram equalization without cv
+void Tool::AI_HistogramEqualization(BYTE* pSrc, BYTE* pDst, int nW, int nH)
+{
+	int nHist[256] = { 0, };
+	int nSumHist[256] = { 0, };
+	int nSum = 0;
+	int nSize = nW * nH;
+	for (int i = 0; i < nSize; i++) {
+		nHist[pSrc[i]]++;
+	}
+	for (int i = 0; i < 256; i++) {
+		nSum += nHist[i];
+		nSumHist[i] = nSum;
+	}
+	for (int i = 0; i < nSize; i++) {
+		pDst[i] = (BYTE)(nSumHist[pSrc[i]] * 255 / nSize);
+	}
+}
+
+//Otsu thresholding
+void Tool::CV2_OtsuThresholding(BYTE* pSrc, BYTE* pDst, int nW, int nH)
+{
+	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
+	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
+	threshold(imgSrc, imgDst, 0, 255, THRESH_BINARY | THRESH_OTSU);
+}
+
+//Otsu thresholding without cv
+void Tool::AI_OtsuThresholding(BYTE* pSrc, BYTE* pDst, int nW, int nH)
+{
+	int nHist[256] = { 0, };
+	int nSumHist[256] = { 0, };
+	int nSum = 0;
+	int nSize = nW * nH;
+	for (int i = 0; i < nSize; i++) {
+		nHist[pSrc[i]]++;
+	}
+	for (int i = 0; i < 256; i++) {
+		nSum += nHist[i];
+		nSumHist[i] = nSum;
+	}
+	double dMax = 0;
+	int nThreshold = 0;
+	for (int i = 0; i < 256; i++) {
+		double dW0 = (double)nSumHist[i] / nSize;
+		double dW1 = 1 - dW0;
+		double dU0 = 0;
+		double dU1 = 0;
+		for (int j = 0; j <= i; j++) {
+			dU0 += (double)j * nHist[j] / nSumHist[i];
+		}
+		for (int j = i + 1; j < 256; j++) {
+			dU1 += (double)j * nHist[j] / (nSize - nSumHist[i]);
+		}
+		double dSigma = dW0 * dW1 * (dU0 - dU1) * (dU0 - dU1);
+		if (dSigma > dMax) {
+			dMax = dSigma;
+			nThreshold = i;
+		}
+	}
+	for (int i = 0; i < nSize; i++) {
+		if (pSrc[i] > nThreshold) {
+			pDst[i] = 255;
+		}
+		else {
+			pDst[i] = 0;
+		}
+	}
+}
+
+//FFT Low Pass Filtering
+void Tool::CV2_FFTLowPassFiltering(BYTE* pSrc, BYTE* pDst, int nW, int nH, int nD0)
+{
+	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
+	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
+	Mat imgFFT;
 	Mat planes[] = { Mat_<float>(imgSrc), Mat::zeros(imgSrc.size(), CV_32F) };
-	Mat complexI;
-	merge(planes, 2, complexI);
-	dft(complexI, complexI);
-	split(complexI, planes);
+
+	merge(planes, 2, imgFFT);
+	dft(imgFFT, imgFFT);
+	split(imgFFT, planes);
 	magnitude(planes[0], planes[1], planes[0]);
 	Mat magI = planes[0];
 	magI += Scalar::all(1);
@@ -363,30 +411,17 @@ void Tool::AI_DFT(BYTE* pSrc, BYTE* pDst, int nW, int nH, double R)
 	q2.copyTo(q1);
 	tmp.copyTo(q2);
 	normalize(magI, magI, 0, 1, NORM_MINMAX);
-	imshow("Input Image", imgSrc);
-	imshow("spectrum magnitude", magI);
+	Mat imgFilter = Mat::zeros(imgFFT.size(), imgFFT.type());
+	circle(imgFilter, Point(cx, cy), nD0, Scalar::all(1), -1, 8, 0);
+	multiply(imgFFT, imgFilter, imgFFT);
+	idft(imgFFT, imgDst, DFT_SCALE | DFT_REAL_OUTPUT);
+	imshow("imgSrc", imgSrc);
+	imshow("Spectrum", magI);
+	imshow("imgDst", imgDst);
 	waitKey();
 }
 
-//Template Matching
-void Tool::AI_TemplateMatching(BYTE* pSrc, BYTE* pDst, int nW, int nH, BYTE* pTemp, int nTempW, int nTempH, int method)
-{
-	Mat imgSrc = Mat(nH, nW, CV_8UC1, pSrc);
-	Mat imgDst = Mat(nH, nW, CV_8UC1, pDst);
-	Mat imgTemp = Mat(nTempH, nTempW, CV_8UC1, pTemp);
-	Mat imgResult;
-	matchTemplate(imgSrc, imgTemp, imgResult, method);
-	normalize(imgResult, imgResult, 0, 1, NORM_MINMAX, -1, Mat());
-	double minVal, maxVal;
-	Point minLoc, maxLoc, matchLoc;
-	minMaxLoc(imgResult, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
-	matchLoc = maxLoc;
-	rectangle(imgSrc, matchLoc, Point(matchLoc.x + imgTemp.cols, matchLoc.y + imgTemp.rows), Scalar::all(0), 2, 8, 0);
-	imshow("imgSrc", imgSrc);
-	imshow("imgTemp", imgTemp);
-	imshow("imgResult", imgResult);
-	waitKey();
-}
+
 
 
 

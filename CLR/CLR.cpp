@@ -26,6 +26,34 @@ namespace CLR
 		Tool::Custom_dilate(src, dst, nW, nH, Kernel_Size);
 	}
 
+	void CustomCV::CV2_HistogramEqualization(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::CV2_HistogramEqualization(src, dst, width, height);
+	}
+
+	void CustomCV::AI_HistogramEqualization(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::AI_HistogramEqualization(src, dst, width, height);
+	}
+
+	void CustomCV::CV2_OtsuThresholding(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::CV2_OtsuThresholding(src, dst, width, height);
+	}
+
+	void CustomCV::AI_OtsuThresholding(array<BYTE>^ source, array<BYTE>^ destination, int width, int height)
+	{
+		pin_ptr<BYTE> src = &source[0];
+		pin_ptr<BYTE> dst = &destination[0];
+		Tool::AI_OtsuThresholding(src, dst, width, height);
+	}
+
 	void CustomCV::CV2_GaussianFilter(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int size, double sigma)
 	{
 		pin_ptr<BYTE> src = &source[0];
@@ -54,11 +82,11 @@ namespace CLR
 		Tool::AI_Laplacian(src, dst, width, height);
 	}
 
-	void CustomCV::AI_HPF(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, double R)
+	void CustomCV::CV2_FFTLowPassFiltering(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, int radius)
 	{
 		pin_ptr<BYTE> src = &source[0];
 		pin_ptr<BYTE> dst = &destination[0];
-		Tool::AI_HPF(src, dst, width, height, R);
+		Tool::CV2_FFTLowPassFiltering(src, dst, width, height, radius);
 	}
 
 	void CustomCV::AI_TemplateMatching(array<BYTE>^ source, array<BYTE>^ destination, int width, int height, array<BYTE>^ templateImg, int templateWidth, int templateHeight, int method)
