@@ -17,6 +17,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CLR;
 using System.Collections.ObjectModel;
+using System.Threading;
+using MessageBox = System.Windows.MessageBox;
 
 namespace VisionProject
 {
@@ -31,13 +33,14 @@ namespace VisionProject
 
     class MainWindowViewModel : INotifyPropertyChanged
     {
+        private Stopwatch sw = new Stopwatch();
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
         long m_Adress;
-        double fGB = 8;
+        double fGB = 10;
         double GB = 1024 * 1024 * 1024;
         long MemoryX = 10000;
-        long MemoryY = 10000;
+        long MemoryY = 80000;
         long TempX = 273;
         long TempY = 252;
         int MapSizeX;
@@ -1192,8 +1195,13 @@ namespace VisionProject
             System.Windows.MessageBox.Show("dilate Done");
         }
 
+
+
         private void CV2_Gaussian()
         {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task t = Task.Factory.StartNew(() => { TaskCpuUsage(10, cts); });
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1220,11 +1228,16 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Gaussian Done");
+            m_lTime = sw.ElapsedMilliseconds;
+            sw.Reset();
+            cts.Cancel();
+            t.Wait();
+            System.Windows.MessageBox.Show("Gaussian Done : " + m_lTime.ToString() + "CPU Usage : " + p_fCpuUsage.ToString());
         }
 
         private void AI_Gaussian()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1251,11 +1264,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Gaussian Done");
+            System.Windows.MessageBox.Show("Gaussian Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void CV2_Hequal()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1282,11 +1297,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Hequal Done");
+            System.Windows.MessageBox.Show("Hequal Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void AI_Hequal()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1313,11 +1330,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Hequal Done");
+            System.Windows.MessageBox.Show("Hequal Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void CV2_Otsu()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1344,11 +1363,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Otsu Done");
+            System.Windows.MessageBox.Show("Otsu Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void AI_Otsu()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1375,11 +1396,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Otsu Done");
+            System.Windows.MessageBox.Show("Otsu Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void CV2_Laplace()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1406,11 +1429,13 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Laplace Done");
+            System.Windows.MessageBox.Show("Laplace Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void AI_Laplace()
         {
+            sw.Start();
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
@@ -1437,7 +1462,8 @@ namespace VisionProject
                     for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
                     break;
             }
-            System.Windows.MessageBox.Show("Laplace Done");
+            System.Windows.MessageBox.Show("Laplace Done" + sw.ElapsedMilliseconds.ToString());
+            sw.Reset();
         }
 
         private void AI_FFT_LPF()
@@ -1541,6 +1567,44 @@ namespace VisionProject
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        double m_fCpuUsage;
+        public double p_fCpuUsage
+        {
+            get => m_fCpuUsage;
+            set
+            {
+                m_fCpuUsage = value;
+                OnPropertyChanged();
+            }
+        }
+
+        long m_lTime;
+        void TaskCpuUsage(int Interval, CancellationTokenSource cts)
+        {
+            Task.Run(() =>
+            {
+                int CoreCount = Environment.ProcessorCount;
+                PerformanceCounter cpuCounter = new PerformanceCounter("Process", "% Processor Time", Process.GetCurrentProcess().ProcessName);
+                float totalCpuLoad = 0;
+                float cpuLoad = 0;
+                int count = 0;
+                cpuLoad = cpuCounter.NextValue(); //10~20ms정도의 기본 딜레이 가지고있음
+                Thread.Sleep(1000);
+                do
+                {
+                    cpuLoad = cpuCounter.NextValue();
+                    Thread.Sleep(Interval);
+                    if (cpuLoad != 0)
+                    {
+                        totalCpuLoad += cpuLoad;
+                        count++;
+                    }
+                } while (!cts.Token.IsCancellationRequested);
+                p_fCpuUsage = (totalCpuLoad / count) / CoreCount;
+                p_fCpuUsage = Math.Round(p_fCpuUsage, 2);
+            }, cts.Token);
+        }
     }
     public class RelayCommand : ICommand
     {
@@ -1617,3 +1681,10 @@ namespace VisionProject
         #endregion
     }
 }
+
+//AjinAxis를 제어하는 클래스 정의
+
+
+
+
+
