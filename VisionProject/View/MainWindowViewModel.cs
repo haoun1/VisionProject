@@ -31,7 +31,7 @@ namespace VisionProject
         public ImageProcess p_imageProcess { get; set; }
         public MainWindowViewModel(int initCanvasW, int initCanvasH)
         {
-            p_memoryManager = new MemoryManager(10000, 10000, 1);
+            p_memoryManager = new MemoryManager(100000, 100000, false);
             p_imageView = new ImageView(p_memoryManager, initCanvasW, initCanvasH);
             p_imageProcess = new ImageProcess();
         }

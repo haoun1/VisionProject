@@ -29,7 +29,6 @@ namespace VisionProject
         G,
         B,
         Color,
-        Template
     }
 
     class ImageView : INotifyPropertyChanged
@@ -153,8 +152,6 @@ namespace VisionProject
                                 p_pixelData2 = c_Pixel.G;
                                 p_pixelData3 = c_Pixel.B;
                                 break;
-                            case ColorMode.Template:
-                                break;
                             default:
                                 break;
                         }
@@ -242,11 +239,17 @@ namespace VisionProject
             {
                 memoryManager = _memoryManager;
                 p_ColorList = new ObservableCollection<ColorMode>();
-                p_ColorList.Add(ColorMode.R);
-                p_ColorList.Add(ColorMode.G);
-                p_ColorList.Add(ColorMode.B);
-                p_ColorList.Add(ColorMode.Color);
-                p_ColorList.Add(ColorMode.Template);
+                if (memoryManager.IsColor)
+                {
+                    p_ColorList.Add(ColorMode.R);
+                    p_ColorList.Add(ColorMode.G);
+                    p_ColorList.Add(ColorMode.B);
+                    p_ColorList.Add(ColorMode.Color);
+                }
+                else
+                {
+                    p_ColorList.Add(ColorMode.R);
+                }
                 p_CanvasWidth = initCanvasW;
                 p_CanvasHeight = initCanvasH;
                 SetRoiRect();
@@ -323,9 +326,6 @@ namespace VisionProject
                                     break;
                                 case ColorMode.Color:
                                     ptr = new IntPtr(memoryManager.RPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
-                                    break;
-                                case ColorMode.Template:
-                                    ptr = new IntPtr(memoryManager.TPtr.ToInt64() + ((long)i) * TempX * nByte);
                                     break;
                                 default:
                                     break;
@@ -479,32 +479,6 @@ namespace VisionProject
                             p_bitmapSource = ToBitmapSource(view);
                         }
                         break;
-                    case ColorMode.Template:
-                        {
-                            if (memoryManager.TPtr != IntPtr.Zero)
-                            {
-                                Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
-                                byte[,,] viewptr = view.Data;
-                                Parallel.For(0, p_CanvasHeight, (yy) =>
-                                {
-                                    long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
-                                    for (int xx = 0; xx < p_CanvasWidth; xx++)
-                                    {
-                                        long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
-                                        byte* arrByte = (byte*)memoryManager.TPtr;
-                                        long idx = pix_x + (pix_y * TempX);
-                                        byte pixel = arrByte[idx];
-                                        viewptr[yy, xx, 0] = pixel;
-                                    }
-                                });
-                                p_bitmapSource = ToBitmapSource(view);
-                            }
-                            else
-                            {
-                                System.Windows.Forms.MessageBox.Show("INTPTR Zero");
-                            }
-                        }
-                        break;
                 }
             }
             catch (Exception e)
@@ -537,13 +511,6 @@ namespace VisionProject
                     for (int i = 0; i < memoryManager.MemoryH; i++)
                     {
                         Marshal.Copy(abuf, 0, memoryManager.BPtr, abuf.Length);
-                    }
-                    break;
-                case ColorMode.Template:
-                    abuf = new byte[TempX * nByte];
-                    for (int i = 0; i < memoryManager.MemoryH; i++)
-                    {
-                        Marshal.Copy(abuf, 0, memoryManager.TPtr, abuf.Length);
                     }
                     break;
                 default:
@@ -640,30 +607,6 @@ namespace VisionProject
                             break;
                         case ColorMode.Color:
                             System.Windows.MessageBox.Show("미구현");
-                            break;
-                        case ColorMode.Template:
-                            abuf = new byte[rect.Width / 10];
-                            if (!WriteBitmapFileHeader(bw, 1, rect.Width / 10, rect.Height / 10))
-                            {
-                                System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
-                                return;
-                            }
-                            if (!WriteBitmapInfoHeader(bw, 1, rect.Width / 10, rect.Height / 10, false))
-                            {
-                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
-                                return;
-                            }
-                            if (!WritePalette(bw))
-                            {
-                                System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
-                                return;
-                            }
-                            for (int i = rect.Height; i >= rect.Height / 10; i--)
-                            {
-                                IntPtr ptr = new IntPtr(memoryManager.TPtr.ToInt64() + ((long)i) * TempX);
-                                Marshal.Copy(ptr, abuf, 0, abuf.Length);
-                                bw.Write(abuf);
-                            }
                             break;
                         default:
                             break;

@@ -13,14 +13,25 @@ namespace VisionProject
         public IntPtr RPtr, GPtr, BPtr, TPtr;
         public long MemoryW;
         public long MemoryH;
+        public bool IsColor = false;
         MemoryMappedFile m_MMF;
         MemoryMappedViewStream m_MMVS;
-        public MemoryManager(int memoryW, int memoryH, long fGB)
+        public MemoryManager(int memoryW, int memoryH, bool bColor)
         {
-            long nPool = fGB * GB;
+            IsColor = bColor;
             MemoryW = memoryW;
             MemoryH = memoryH;
-            m_MMF = MemoryMappedFile.CreateOrOpen("Memory", nPool);
+            long nPool = 0;
+            if (IsColor)
+            {
+                nPool = MemoryW * MemoryH * 3;
+            }
+            else
+            {
+                nPool = MemoryW * MemoryH;
+            }
+
+            m_MMF = MemoryMappedFile.CreateOrOpen("VisionProjectMemory", nPool);
             unsafe
             {
                 byte* p = null;
