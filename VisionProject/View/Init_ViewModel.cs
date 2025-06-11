@@ -10,8 +10,8 @@ namespace VisionProject
     public class Init_ViewModel : ObservableObject
     {
         bool m_bColor = false;
-        int m_memoryW;
-        int m_memoryH;
+        int m_memoryW = 40000;
+        int m_memoryH = 40000;
         public bool p_bColor
         {
             get => m_bColor;
