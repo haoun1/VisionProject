@@ -19,6 +19,7 @@ using CLR;
 using System.Collections.ObjectModel;
 using System.Threading;
 using MessageBox = System.Windows.MessageBox;
+using VisionProject.MVVM;
 
 namespace VisionProject
 {
@@ -28,10 +29,10 @@ namespace VisionProject
         public MemoryManager p_memoryManager { get; set; }
         public ImageView p_imageView { get; set; }
         public ImageProcess p_imageProcess { get; set; }
-        public MainWindowViewModel()
+        public MainWindowViewModel(int initCanvasW, int initCanvasH)
         {
             p_memoryManager = new MemoryManager(10000, 10000, 1);
-            p_imageView = new ImageView(p_memoryManager, 1000, 1000);
+            p_imageView = new ImageView(p_memoryManager, initCanvasW, initCanvasH);
             p_imageProcess = new ImageProcess();
         }
         public RelayCommand ThresholdCommand
@@ -84,7 +85,7 @@ namespace VisionProject
             {
                 try
                 {
-                    p_imageProcess.CV2_Gaussian(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, p_imageView.MapSizeX, p_imageView.MapSizeY);
+                    p_imageProcess.CV2_Gaussian(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
                 }
                 catch (Exception e)
                 {
@@ -99,7 +100,7 @@ namespace VisionProject
             {
                 try
                 {
-                    p_imageProcess.CV2_Hequal(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, p_imageView.MapSizeX, p_imageView.MapSizeY);
+                    p_imageProcess.CV2_Hequal(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
                 }
                 catch (Exception e)
                 {
@@ -114,7 +115,7 @@ namespace VisionProject
             {
                 try
                 {
-                    p_imageProcess.CV2_Otsu(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, p_imageView.MapSizeX, p_imageView.MapSizeY);
+                    p_imageProcess.CV2_Otsu(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
                 }
                 catch (Exception e)
                 {
@@ -129,7 +130,7 @@ namespace VisionProject
             {
                 try
                 {
-                    p_imageProcess.CV2_Laplace(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, p_imageView.MapSizeX, p_imageView.MapSizeY);
+                    p_imageProcess.CV2_Laplace(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
                 }
                 catch (Exception e)
                 {
@@ -144,7 +145,7 @@ namespace VisionProject
             {
                 try
                 {
-                    p_imageProcess.AI_FFT_LPF(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, p_imageView.MapSizeX, p_imageView.MapSizeY);
+                    p_imageProcess.AI_FFT_LPF(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
                 }
                 catch (Exception e)
                 {
@@ -164,7 +165,7 @@ namespace VisionProject
 
         public RelayCommand ImageSaveCommand
         {
-            get => new RelayCommand(p_imageView.ImageSave);
+            get => new RelayCommand(()=> { p_imageView.ImageSave(new Domain.CRect(0, 0, (int)p_memoryManager.MemoryW, (int)p_memoryManager.MemoryH)); });
         }
     }
 }

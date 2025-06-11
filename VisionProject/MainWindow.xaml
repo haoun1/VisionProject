@@ -91,6 +91,9 @@
                 <i:EventTrigger EventName="MouseWheel">
                     <i:CallMethodAction TargetObject="{Binding p_imageView}" MethodName="MouseWheel" />
                 </i:EventTrigger>
+                <i:EventTrigger EventName="PreviewMouseDown">
+                    <i:CallMethodAction TargetObject="{Binding p_imageView}" MethodName="MouseDown"/>
+                </i:EventTrigger>
             </i:Interaction.Triggers>
             <Canvas Background="Transparent" obs:SizeObserver.Observe="true" Focusable="True"
                 obs:SizeObserver.ObservedWidth="{Binding p_imageView.p_CanvasWidth, Mode=TwoWay}"

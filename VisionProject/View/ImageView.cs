@@ -19,6 +19,7 @@ using CLR;
 using System.Collections.ObjectModel;
 using System.Threading;
 using MessageBox = System.Windows.MessageBox;
+using VisionProject.Domain;
 
 namespace VisionProject
 {
@@ -40,8 +41,35 @@ namespace VisionProject
         long TempY = 252;
         int CanvasBit_Width = 800;
         ColorMode m_color = ColorMode.R;
-        public int MapSizeX;
-        public int MapSizeY;
+        private System.Drawing.Rectangle _View_Rect = new System.Drawing.Rectangle();
+        public System.Drawing.Rectangle p_View_Rect
+        {
+            get
+            {
+                return _View_Rect;
+            }
+            set
+            {
+                if (_View_Rect == value) return;
+                _View_Rect = value;
+                OnPropertyChanged();
+            }
+        }
+        private double _Zoom = 1;
+        public double p_Zoom
+        {
+            get
+            {
+                return _Zoom;
+            }
+            set
+            {
+                //if (_Zoom == value) return;
+                _Zoom = value;
+                OnPropertyChanged();
+                SetRoiRect();
+            }
+        }
         public ColorMode p_color
         {
             get => m_color;
@@ -50,7 +78,7 @@ namespace VisionProject
                 if (m_color == value) return;
                 m_color = value;
                 OnPropertyChanged();
-                ImageOpen();
+                SetRoiRect();
             }
         }
         public int p_CanvasWidth
@@ -70,7 +98,7 @@ namespace VisionProject
             {
                 CanvasBit_Height = value;
                 OnPropertyChanged();
-                ImageOpen();
+                SetRoiRect();
             }
         }
         public ObservableCollection<ColorMode> p_ColorList { get; set; }
@@ -81,7 +109,8 @@ namespace VisionProject
         int Bit_Height = 0;
         int nByte = 0;
         BitmapSource m_bitmapSource;
-
+        CPoint m_ptViewBuffer = new CPoint();
+        CPoint m_ptMouseBuffer = new CPoint();
         int m_mouseX;
         public int p_mouseX
         {
@@ -99,81 +128,43 @@ namespace VisionProject
             get => m_mouseY;
             set
             {
-                try
+                if (p_CanvasWidth != 0 && p_CanvasHeight != 0)
                 {
-                    unsafe
+                    if (p_mouseX < p_bitmapSource.Width && p_mouseY < p_bitmapSource.Height)
                     {
-                        int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                        int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
-                        long idx1;
-                        long idx2;
-                        long idx3;
-                        byte b1;
-                        byte b2;
-                        byte b3;
-                        p_mouseMemX = p_mouseX * SamplingRate_x;
-                        p_mouseMemY = p_mouseY * SamplingRate_y;
-
-                        if (p_mouseMemX > MapSizeX)
+                        byte[] pixel = new byte[1];
+                        switch (p_color)
                         {
-                            p_pixelData1 = 0;
-                            p_pixelData2 = 0;
-                            p_pixelData3 = 0;
+                            case ColorMode.R:
+                                p_bitmapSource.CopyPixels(new Int32Rect(p_mouseX, p_mouseY, 1, 1), pixel, 1, 0);
+                                p_pixelData1 = pixel[0];
+                                break;
+                            case ColorMode.G:
+                                p_bitmapSource.CopyPixels(new Int32Rect(p_mouseX, p_mouseY, 1, 1), pixel, 1, 0);
+                                p_pixelData2 = pixel[0];
+                                break;
+                            case ColorMode.B:
+                                p_bitmapSource.CopyPixels(new Int32Rect(p_mouseX, p_mouseY, 1, 1), pixel, 1, 0);
+                                p_pixelData3 = pixel[0];
+                                break;
+                            case ColorMode.Color:
+                                System.Windows.Media.Color c_Pixel = GetPixelColor(p_bitmapSource, p_mouseX, p_mouseY);
+                                p_pixelData1 = c_Pixel.R;
+                                p_pixelData2 = c_Pixel.G;
+                                p_pixelData3 = c_Pixel.B;
+                                break;
+                            case ColorMode.Template:
+                                break;
+                            default:
+                                break;
                         }
-                        else if (p_mouseMemY > MapSizeY)
-                        {
-                            p_pixelData1 = 0;
-                            p_pixelData2 = 0;
-                            p_pixelData3 = 0;
-                        }
-                        else
-                        {
-
-                            byte* arrByte = (byte*)memoryManager.RPtr.ToPointer();
-
-                            switch (m_color)
-                            {
-                                case ColorMode.R:
-                                    idx1 = p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW);
-                                    b1 = arrByte[idx1];
-                                    p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
-                                    p_pixelData2 = 0;
-                                    p_pixelData3 = 0;
-                                    break;
-                                case ColorMode.G:
-                                    idx2 = memoryManager.MemoryW * memoryManager.MemoryH + (p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW));
-                                    b2 = arrByte[idx2];
-                                    p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
-                                    p_pixelData1 = 0;
-                                    p_pixelData3 = 0;
-                                    break;
-                                case ColorMode.B:
-                                    idx3 = 2 * memoryManager.MemoryW * memoryManager.MemoryH + (p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW));
-                                    b3 = arrByte[idx3];
-                                    p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
-                                    p_pixelData1 = 0;
-                                    p_pixelData2 = 0;
-                                    break;
-                                case ColorMode.Color:
-                                    idx1 = p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW);
-                                    b1 = arrByte[idx1];
-                                    p_pixelData1 = BitConverter.ToUInt16(new byte[2] { b1, 0 }, 0);
-
-                                    idx2 = memoryManager.MemoryW * memoryManager.MemoryH + (p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW));
-                                    b2 = arrByte[idx2];
-                                    p_pixelData2 = BitConverter.ToUInt16(new byte[2] { b2, 0 }, 0);
-
-                                    idx3 = 2 * memoryManager.MemoryW * memoryManager.MemoryH + (p_mouseMemX + ((long)p_mouseMemY * memoryManager.MemoryW));
-                                    b3 = arrByte[idx3];
-                                    p_pixelData3 = BitConverter.ToUInt16(new byte[2] { b3, 0 }, 0);
-                                    break;
-                            }
-                        }
+                        p_mouseMemY = p_View_Rect.Y + p_mouseY * p_View_Rect.Height / p_CanvasHeight;
+                        p_mouseMemX = p_View_Rect.X + p_mouseX * p_View_Rect.Width / p_CanvasWidth;
                     }
-                }
-                catch (Exception e)
-                {
-                    System.Windows.MessageBox.Show(e.Message);
+                    else
+                    {
+
+                    }
                 }
                 m_mouseY = value;
                 OnPropertyChanged();
@@ -245,19 +236,20 @@ namespace VisionProject
             }
         }
 
-        public ImageView(MemoryManager _memoryManager, int mapX, int mapY)
+        public ImageView(MemoryManager _memoryManager, int initCanvasW, int initCanvasH)
         {
             try
             {
                 memoryManager = _memoryManager;
-                MapSizeX = mapX;
-                MapSizeY = mapY;
                 p_ColorList = new ObservableCollection<ColorMode>();
                 p_ColorList.Add(ColorMode.R);
                 p_ColorList.Add(ColorMode.G);
                 p_ColorList.Add(ColorMode.B);
                 p_ColorList.Add(ColorMode.Color);
                 p_ColorList.Add(ColorMode.Template);
+                p_CanvasWidth = initCanvasW;
+                p_CanvasHeight = initCanvasH;
+                SetRoiRect();
             }
             catch (Exception e)
             {
@@ -301,8 +293,6 @@ namespace VisionProject
 
                     if (!ReadBitmapFileHeader(br, ref bfOffbits)) return;
                     if (!ReadBitmapInfoHeader(br, ref Bit_Width, ref Bit_Height, ref nByte)) return;
-                    MapSizeX = Bit_Width;
-                    MapSizeY = Bit_Height;
 
                     if (nByte == 1)
                     {
@@ -393,15 +383,13 @@ namespace VisionProject
                             if (memoryManager.RPtr != IntPtr.Zero)
                             {
                                 Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
-                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                                 byte[,,] viewptr = view.Data;
                                 Parallel.For(0, p_CanvasHeight, (yy) =>
                                 {
-                                    long pix_y = yy * SamplingRate_y;
+                                    long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
                                     for (int xx = 0; xx < p_CanvasWidth; xx++)
                                     {
-                                        long pix_x = xx * SamplingRate_x;
+                                        long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
                                         byte* arrByte = (byte*)memoryManager.RPtr;
                                         long idx = pix_x + (pix_y * memoryManager.MemoryW);
                                         byte pixel = arrByte[idx];
@@ -421,15 +409,13 @@ namespace VisionProject
                             if (memoryManager.RPtr != IntPtr.Zero)
                             {
                                 Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
-                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                                 byte[,,] viewptr = view.Data;
                                 Parallel.For(0, p_CanvasHeight, (yy) =>
                                 {
-                                    long pix_y = yy * SamplingRate_y;
+                                    long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
                                     for (int xx = 0; xx < p_CanvasWidth; xx++)
                                     {
-                                        long pix_x = xx * SamplingRate_x;
+                                        long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
                                         byte* arrByte = (byte*)memoryManager.GPtr;
                                         long idx = pix_x + (pix_y * memoryManager.MemoryW);
                                         byte pixel = arrByte[idx];
@@ -449,15 +435,13 @@ namespace VisionProject
                             if (memoryManager.RPtr != IntPtr.Zero)
                             {
                                 Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
-                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                                 byte[,,] viewptr = view.Data;
                                 Parallel.For(0, p_CanvasHeight, (yy) =>
                                 {
-                                    long pix_y = yy * SamplingRate_y;
+                                    long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
                                     for (int xx = 0; xx < p_CanvasWidth; xx++)
                                     {
-                                        long pix_x = xx * SamplingRate_x;
+                                        long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
                                         byte* arrByte = (byte*)memoryManager.BPtr;
                                         long idx = pix_x + (pix_y * memoryManager.MemoryW);
                                         byte pixel = arrByte[idx];
@@ -476,18 +460,16 @@ namespace VisionProject
                         if (memoryManager.RPtr != IntPtr.Zero)
                         {
                             Image<Rgb, byte> view = new Image<Rgb, byte>(p_CanvasWidth, p_CanvasHeight);
-                            int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                            int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                             byte[,,] viewPtr = view.Data;
                             byte* RByte = (byte*)memoryManager.RPtr.ToPointer();
                             byte* GByte = (byte*)memoryManager.GPtr.ToPointer();
                             byte* BByte = (byte*)memoryManager.BPtr.ToPointer();
-                            Parallel.For(0, MapSizeY < p_CanvasHeight ? MapSizeY : p_CanvasHeight, (yy) =>
+                            Parallel.For(0, p_View_Rect.Height < p_CanvasHeight ? p_View_Rect.Height : p_CanvasHeight, (yy) =>
                             {
-                                long pix_y = yy * SamplingRate_y;
-                                for (int xx = 0; xx < (MapSizeX < p_CanvasWidth ? MapSizeX : p_CanvasWidth); xx++)
+                                long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
+                                for (int xx = 0; xx < (p_View_Rect.Width < p_CanvasWidth ? p_View_Rect.Width : p_CanvasWidth); xx++)
                                 {
-                                    long pix_x = xx * SamplingRate_x;
+                                    long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
                                     long idx = pix_x + (pix_y * memoryManager.MemoryW);
                                     viewPtr[yy, xx, 0] = RByte[idx];
                                     viewPtr[yy, xx, 1] = GByte[idx];
@@ -502,15 +484,13 @@ namespace VisionProject
                             if (memoryManager.TPtr != IntPtr.Zero)
                             {
                                 Image<Gray, byte> view = new Image<Gray, byte>(p_CanvasWidth, p_CanvasHeight);
-                                int SamplingRate_y = MapSizeY < p_CanvasHeight ? 1 : MapSizeY / p_CanvasHeight;
-                                int SamplingRate_x = MapSizeX < p_CanvasWidth ? 1 : MapSizeX / p_CanvasWidth;
                                 byte[,,] viewptr = view.Data;
                                 Parallel.For(0, p_CanvasHeight, (yy) =>
                                 {
-                                    long pix_y = yy * SamplingRate_y;
+                                    long pix_y = p_View_Rect.Y + yy * p_View_Rect.Height / p_CanvasHeight;
                                     for (int xx = 0; xx < p_CanvasWidth; xx++)
                                     {
-                                        long pix_x = xx * SamplingRate_x;
+                                        long pix_x = p_View_Rect.X + xx * p_View_Rect.Width / p_CanvasWidth;
                                         byte* arrByte = (byte*)memoryManager.TPtr;
                                         long idx = pix_x + (pix_y * TempX);
                                         byte pixel = arrByte[idx];
@@ -572,14 +552,14 @@ namespace VisionProject
             System.Windows.Forms.MessageBox.Show("Image Clear Done");
         }
 
-        public unsafe void ImageSave()
+        public unsafe void ImageSave(CRect rect)
         {
             try
             {
                 FileStream fs = null;
                 BinaryWriter bw = null;
                 SaveFileDialog dlg = new SaveFileDialog();
-                byte[] abuf = new byte[MapSizeX];
+                byte[] abuf = new byte[rect.Width];
                 dlg.Filter = "Image Files|*.bmp";
                 dlg.InitialDirectory = @"D:\Images";
                 if (dlg.ShowDialog() == DialogResult.OK)
@@ -590,12 +570,12 @@ namespace VisionProject
                     switch (m_color)
                     {
                         case ColorMode.R:
-                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            if (!WriteBitmapFileHeader(bw, 1, rect.Width, rect.Height))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
                                 return;
                             }
-                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            if (!WriteBitmapInfoHeader(bw, 1, rect.Width, rect.Height, false))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
@@ -605,7 +585,7 @@ namespace VisionProject
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
                             }
-                            for (int i = MapSizeY - 1; i >= 0; i--)
+                            for (int i = rect.Height - 1; i >= 0; i--)
                             {
                                 IntPtr ptr = new IntPtr(memoryManager.RPtr.ToInt64() + ((long)i) * memoryManager.MemoryW);
                                 Marshal.Copy(ptr, abuf, 0, abuf.Length);
@@ -613,12 +593,12 @@ namespace VisionProject
                             }
                             break;
                         case ColorMode.G:
-                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            if (!WriteBitmapFileHeader(bw, 1, rect.Width, rect.Height))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
                                 return;
                             }
-                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            if (!WriteBitmapInfoHeader(bw, 1, rect.Width, rect.Height, false))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
@@ -628,7 +608,7 @@ namespace VisionProject
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
                             }
-                            for (int i = MapSizeY; i >= 0; i--)
+                            for (int i = rect.Height; i >= 0; i--)
                             {
                                 IntPtr ptr = new IntPtr(memoryManager.GPtr.ToInt64() + ((long)i) * memoryManager.MemoryW);
                                 Marshal.Copy(ptr, abuf, 0, abuf.Length);
@@ -636,12 +616,12 @@ namespace VisionProject
                             }
                             break;
                         case ColorMode.B:
-                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX, MapSizeY))
+                            if (!WriteBitmapFileHeader(bw, 1, rect.Width, rect.Height))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
                                 return;
                             }
-                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX, MapSizeY, false))
+                            if (!WriteBitmapInfoHeader(bw, 1, rect.Width, rect.Height, false))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
@@ -651,7 +631,7 @@ namespace VisionProject
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
                             }
-                            for (int i = MapSizeY; i >= 0; i--)
+                            for (int i = rect.Height; i >= 0; i--)
                             {
                                 IntPtr ptr = new IntPtr(memoryManager.BPtr.ToInt64() + ((long)i) * memoryManager.MemoryW);
                                 Marshal.Copy(ptr, abuf, 0, abuf.Length);
@@ -662,13 +642,13 @@ namespace VisionProject
                             System.Windows.MessageBox.Show("미구현");
                             break;
                         case ColorMode.Template:
-                            abuf = new byte[MapSizeX / 10];
-                            if (!WriteBitmapFileHeader(bw, 1, MapSizeX / 10, MapSizeY / 10))
+                            abuf = new byte[rect.Width / 10];
+                            if (!WriteBitmapFileHeader(bw, 1, rect.Width / 10, rect.Height / 10))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap FileHeader Error");
                                 return;
                             }
-                            if (!WriteBitmapInfoHeader(bw, 1, MapSizeX / 10, MapSizeY / 10, false))
+                            if (!WriteBitmapInfoHeader(bw, 1, rect.Width / 10, rect.Height / 10, false))
                             {
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
@@ -678,7 +658,7 @@ namespace VisionProject
                                 System.Windows.MessageBox.Show("Write Bitmap InfoHeader Error");
                                 return;
                             }
-                            for (int i = MapSizeY; i >= MapSizeY / 10; i--)
+                            for (int i = rect.Height; i >= rect.Height / 10; i--)
                             {
                                 IntPtr ptr = new IntPtr(memoryManager.TPtr.ToInt64() + ((long)i) * TempX);
                                 Marshal.Copy(ptr, abuf, 0, abuf.Length);
@@ -837,11 +817,101 @@ namespace VisionProject
             var pt = e.GetPosition(sender as IInputElement);
             p_mouseX = (int)pt.X;
             p_mouseY = (int)pt.Y;
+            //isMove = false;
+            if (Keyboard.IsKeyDown(Key.LeftShift))
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    CanvasMovePoint_Ref(m_ptViewBuffer, m_ptMouseBuffer.X - p_mouseX, m_ptMouseBuffer.Y - p_mouseY);
+                    //isMove = true;
+                    return;
+                }
+            }
+        }
+        public void MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            m_ptViewBuffer.X = p_View_Rect.X;
+            m_ptViewBuffer.Y = p_View_Rect.Y;
+            m_ptMouseBuffer.X = p_mouseX;
+            m_ptMouseBuffer.Y = p_mouseY;
+        }
+        public void CanvasMovePoint_Ref(CPoint point, int nX, int nY)
+        {
+            CPoint MovePoint = new CPoint();
+            MovePoint.X = point.X + p_View_Rect.Width * nX / p_CanvasWidth;
+            MovePoint.Y = point.Y + p_View_Rect.Height * nY / p_CanvasHeight;
+
+            if (MovePoint.X < 0)
+            {
+                MovePoint.X = 0;
+            }
+            else if (MovePoint.X > memoryManager.MemoryW - p_View_Rect.Width)
+            {
+                MovePoint.X = (int)(memoryManager.MemoryW - p_View_Rect.Width);
+            }
+
+            if (MovePoint.Y < 0)
+            {
+                MovePoint.Y = 0;
+            }
+            else if (MovePoint.Y > memoryManager.MemoryH - p_View_Rect.Height)
+            {
+                MovePoint.Y = (int)(memoryManager.MemoryH - p_View_Rect.Height);
+            }
+            SetViewRect(MovePoint);
+        }
+        void SetViewRect(CPoint StartPt)
+        {
+            bool bRatio_WH = (double)memoryManager.MemoryW / p_CanvasWidth < (double)memoryManager.MemoryH / p_CanvasHeight;
+            if (bRatio_WH)
+            { //세로가 길어
+                p_View_Rect = new System.Drawing.Rectangle(StartPt.X, StartPt.Y, Convert.ToInt32(memoryManager.MemoryW * p_Zoom), Convert.ToInt32(memoryManager.MemoryW * p_Zoom * p_CanvasHeight / p_CanvasWidth));
+            }
+            else
+            {
+                p_View_Rect = new System.Drawing.Rectangle(StartPt.X, StartPt.Y, Convert.ToInt32(memoryManager.MemoryH * p_Zoom * p_CanvasWidth / p_CanvasHeight), Convert.ToInt32(memoryManager.MemoryH * p_Zoom));
+            }
+            if (p_View_Rect.Height % 2 != 0)
+            {
+                _View_Rect.Height += 1;
+            }
+            ImageOpen();
         }
 
         public void MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            ImageOpen();
+            if (Keyboard.IsKeyDown(Key.LeftShift))
+            {
+                var viewer = (System.Windows.Controls.Grid)sender;
+                viewer.Focus();
+                try
+                {
+                    int lines = e.Delta * SystemInformation.MouseWheelScrollLines / 120;
+                    double zoom = _Zoom;
+
+                    if (lines < 0)
+                    {
+                        zoom *= 1.4F;
+                    }
+                    if (lines > 0)
+                    {
+                        zoom *= 0.6F;
+                    }
+                    if (zoom > 1)
+                    {
+                        zoom = 1;
+                    }
+                    else if (p_Zoom < 0.0001)
+                    {
+                        zoom = 0.0001;
+                    }
+                    p_Zoom = zoom;
+                }
+                catch (Exception ee)
+                {
+                    MessageBox.Show("MouseWheel Exception : " + ee.Message);
+                }
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -888,84 +958,85 @@ namespace VisionProject
                 p_fCpuUsage = Math.Round(p_fCpuUsage, 2);
             }, cts.Token);
         }
-    }
-    public class RelayCommand : ICommand
-    {
-
-        #region Declarations
-
-        readonly Func<Boolean> _canExecute;
-        readonly Action _execute;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RelayCommand&lt;T&gt;"/> class and the command can always be executed.
-        /// </summary>
-        /// <param name="execute">The execution logic.</param>
-        public RelayCommand(Action execute)
-            : this(execute, null)
+        System.Windows.Media.Color GetPixelColor(BitmapSource source, int x, int y)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RelayCommand&lt;T&gt;"/> class.
-        /// </summary>
-        /// <param name="execute">The execution logic.</param>
-        /// <param name="canExecute">The execution status logic.</param>
-        public RelayCommand(Action execute, Func<Boolean> canExecute)
-        {
-
-            if (execute == null)
-                throw new ArgumentNullException("execute");
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        #endregion
-
-        #region ICommand Members
-
-        public event EventHandler CanExecuteChanged
-        {
-            add
+            System.Windows.Media.Color c = Colors.White;
+            if (source != null)
             {
-
-                if (_canExecute != null)
-                    CommandManager.RequerySuggested += value;
+                try
+                {
+                    CroppedBitmap cb = new CroppedBitmap(source, new Int32Rect(x, y, 1, 1));
+                    var pixels = new byte[4];
+                    cb.CopyPixels(pixels, 4, 0);
+                    c = System.Windows.Media.Color.FromRgb(pixels[2], pixels[1], pixels[0]);
+                }
+                catch (Exception) { }
             }
-            remove
-            {
-
-                if (_canExecute != null)
-                    CommandManager.RequerySuggested -= value;
-            }
+            return c;
         }
-
-        [DebuggerStepThrough]
-        public Boolean CanExecute(Object parameter)
+        void SetRoiRect()
         {
-            return _canExecute == null ? true : _canExecute();
+            CPoint StartPt = GetStartPoint_Center((int)memoryManager.MemoryW, (int)memoryManager.MemoryH);
+            bool bRatio_WH = (double)memoryManager.MemoryW / p_CanvasWidth < (double)memoryManager.MemoryH / p_CanvasHeight;
+            if (bRatio_WH)
+            { //세로가 길어
+                p_View_Rect = new System.Drawing.Rectangle(StartPt.X, StartPt.Y, Convert.ToInt32(memoryManager.MemoryW * p_Zoom), Convert.ToInt32(memoryManager.MemoryW * p_Zoom * p_CanvasHeight / p_CanvasWidth));
+            }
+            else
+            {
+                p_View_Rect = new System.Drawing.Rectangle(StartPt.X, StartPt.Y, Convert.ToInt32(memoryManager.MemoryH * p_Zoom * p_CanvasWidth / p_CanvasHeight), Convert.ToInt32(memoryManager.MemoryH * p_Zoom));
+            }
+            if (p_View_Rect.Height % 2 != 0)
+            {
+                _View_Rect.Height += 1;
+            }
+            ImageOpen();
         }
-
-        public void Execute(Object parameter)
+        CPoint GetStartPoint_Center(int nImgWidth, int nImgHeight)
         {
-            try
-            {
-                _execute();
+            bool bRatio_WH = (double)memoryManager.MemoryW / p_CanvasWidth < (double)memoryManager.MemoryH / p_CanvasHeight;
+            int viewrectwidth = 0;
+            int viewrectheight = 0;
+            int nX = 0;
+            int nY = 0;
+            if (bRatio_WH)
+            { //세로가 길어
+              //nX = p_View_Rect.X + Convert.ToInt32(p_View_Rect.Width - nImgWidth * p_Zoom) /2; 기존 중앙기준으로 확대/축소되는 코드. 
+                nX = p_View_Rect.X + Convert.ToInt32(p_View_Rect.Width - nImgWidth * p_Zoom) * p_mouseX / p_CanvasWidth; // 마우스 커서기준으로 확대/축소
+                nY = p_View_Rect.Y + Convert.ToInt32(p_View_Rect.Height - nImgWidth * p_Zoom * p_CanvasHeight / p_CanvasWidth) * p_mouseY / p_CanvasHeight;
+                viewrectwidth = Convert.ToInt32(nImgWidth * p_Zoom);
+                viewrectheight = Convert.ToInt32(nImgWidth * p_Zoom * p_CanvasHeight / p_CanvasWidth);
             }
-            catch (Exception)
+            else
             {
+                nX = p_View_Rect.X + Convert.ToInt32(p_View_Rect.Width - nImgHeight * p_Zoom * p_CanvasWidth / p_CanvasHeight) * p_mouseX / p_CanvasWidth;
+                nY = p_View_Rect.Y + Convert.ToInt32(p_View_Rect.Height - nImgHeight * p_Zoom) * p_mouseY / p_CanvasHeight;
+                viewrectwidth = Convert.ToInt32(nImgHeight * p_Zoom * p_CanvasWidth / p_CanvasHeight);
+                viewrectheight = Convert.ToInt32(nImgHeight * p_Zoom);
             }
-        }
 
-        #endregion
-    }
+            if (nX < 0)
+            {
+                nX = 0;
+            }
+            else if (nX > nImgWidth - viewrectwidth)
+            {
+                nX = nImgWidth - viewrectwidth;
+            }
+
+            if (nY < 0)
+            {
+                nY = 0;
+            }
+            else if (nY > nImgHeight - viewrectheight)
+            {
+                nY = nImgHeight - viewrectheight;
+            }
+
+            return new CPoint(nX, nY);
+        }
+    }    
 }
-
-//AjinAxis를 제어하는 클래스 정의
 
 
 

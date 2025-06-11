@@ -23,7 +23,7 @@ namespace VisionProject
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel();
+            DataContext = new MainWindowViewModel((int)Width, (int)Height);
         }
     }
 }

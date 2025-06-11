@@ -125,151 +125,151 @@ namespace VisionProject
 
 
 
-        public void CV2_Gaussian(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int MapSizeX, int MapSizeY)
+        public void CV2_Gaussian(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int roiW, int roiH)
         {
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
             {
                 case ColorMode.R:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, MapSizeX, MapSizeY, 5, 10);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), RPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, roiW, roiH, 5, 10);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), RPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.G:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, MapSizeX, MapSizeY, 20, 1);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), GPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, roiW, roiH, 20, 1);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), GPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.B:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, MapSizeX, MapSizeY, 20, 1);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_GaussianFilter(sourceArray, resultArray, roiW, roiH, 20, 1);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), BPtr + (i * (int)MemoryX), roiW);
                     break;
             }
         }
 
-        public void CV2_Hequal(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int MapSizeX, int MapSizeY)
+        public void CV2_Hequal(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int roiW, int roiH)
         {
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
             {
                 case ColorMode.R:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), RPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), RPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.G:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), GPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), GPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.B:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_HistogramEqualization(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), BPtr + (i * (int)MemoryX), roiW);
                     break;
             }
         }
 
-        public void CV2_Otsu(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int MapSizeX, int MapSizeY)
+        public void CV2_Otsu(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int roiW, int roiH)
         {
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
             {
                 case ColorMode.R:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), RPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), RPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.G:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), GPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), GPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.B:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_OtsuThresholding(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), BPtr + (i * (int)MemoryX), roiW);
                     break;
             }
         }
 
-        public void CV2_Laplace(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int MapSizeX, int MapSizeY)
+        public void CV2_Laplace(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int roiW, int roiH)
         {
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
             {
                 case ColorMode.R:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_Laplacian(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), RPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), RPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.G:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_Laplacian(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), GPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), GPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.B:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_Laplacian(sourceArray, resultArray, MapSizeX, MapSizeY);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_Laplacian(sourceArray, resultArray, roiW, roiH);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), BPtr + (i * (int)MemoryX), roiW);
                     break;
             }
         }
-        public void AI_FFT_LPF(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int MapSizeX, int MapSizeY)
+        public void AI_FFT_LPF(ColorMode m_color, IntPtr RPtr, IntPtr GPtr, IntPtr BPtr, long MemoryX, long MemoryY, int roiW, int roiH)
         {
             byte[] sourceArray;
             byte[] resultArray;
             switch (m_color)
             {
                 case ColorMode.R:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, MapSizeX, MapSizeY, 200);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), RPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(RPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, roiW, roiH, 200);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), RPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.G:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, MapSizeX, MapSizeY, 50);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), GPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(GPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, roiW, roiH, 50);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), GPtr + (i * (int)MemoryX), roiW);
                     break;
                 case ColorMode.B:
-                    sourceArray = new byte[MapSizeX * MapSizeY];
-                    resultArray = new byte[MapSizeX * MapSizeY];
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * MapSizeX), MapSizeX);
-                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, MapSizeX, MapSizeY, 50);
-                    for (int i = 0; i < MapSizeY; i++) Marshal.Copy(resultArray, (i * MapSizeX), BPtr + (i * (int)MemoryX), MapSizeX);
+                    sourceArray = new byte[roiW * roiH];
+                    resultArray = new byte[roiW * roiH];
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(BPtr + (i * (int)MemoryX), sourceArray, (i * roiW), roiW);
+                    CustomCV.CV2_FFTLowPassFiltering(sourceArray, resultArray, roiW, roiH, 50);
+                    for (int i = 0; i < roiH; i++) Marshal.Copy(resultArray, (i * roiW), BPtr + (i * (int)MemoryX), roiW);
                     break;
             }
         }

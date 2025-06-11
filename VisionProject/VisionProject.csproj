@@ -130,7 +130,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Domain\CPoint.cs" />
     <Compile Include="Domain\ImageProcess.cs" />
+    <Compile Include="MVVM\RelayCommand.cs" />
     <Compile Include="View\ImageView.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
