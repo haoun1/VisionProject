@@ -617,8 +617,8 @@ namespace VisionProject
                 {
 
                 }
-                fs.Close();
-                bw.Close();
+                fs?.Close();
+                bw?.Close();
                 System.Windows.MessageBox.Show("Image Save Done");
             }
             catch (Exception e)

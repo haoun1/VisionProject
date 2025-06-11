@@ -20,6 +20,8 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using MessageBox = System.Windows.MessageBox;
 using VisionProject.MVVM;
+using VisionProject.View;
+using VisionProject.Domain;
 
 namespace VisionProject
 {
@@ -31,7 +33,7 @@ namespace VisionProject
         public ImageProcess p_imageProcess { get; set; }
         public MainWindowViewModel(int initCanvasW, int initCanvasH)
         {
-            p_memoryManager = new MemoryManager(100000, 100000, false);
+            p_memoryManager = new MemoryManager(1000, 1000, false);
             p_imageView = new ImageView(p_memoryManager, initCanvasW, initCanvasH);
             p_imageProcess = new ImageProcess();
         }
@@ -165,7 +167,18 @@ namespace VisionProject
 
         public RelayCommand ImageSaveCommand
         {
-            get => new RelayCommand(()=> { p_imageView.ImageSave(new Domain.CRect(0, 0, (int)p_memoryManager.MemoryW, (int)p_memoryManager.MemoryH)); });
+            get => new RelayCommand(()=> {
+                ImageSaveROI_ViewModel vm = new ImageSaveROI_ViewModel();
+                ImageSaveROI_PopUp ui = new ImageSaveROI_PopUp();
+                ui.DataContext = vm;
+                ui.ShowDialog();
+                if (vm.p_Width <= 0 || vm.p_Height <= 0)
+                {
+                    MessageBox.Show("width or height <= 0");
+                    return;
+                }
+                p_imageView.ImageSave(new Domain.CRect(new CPoint(vm.p_startX, vm.p_startY), vm.p_Width, vm.p_Height)); 
+            });
         }
     }
 }

@@ -1,0 +1,28 @@
+﻿<Window x:Class="VisionProject.View.ImageSaveROI_PopUp"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VisionProject.View"
+        mc:Ignorable="d"
+        Title="ImageSaveROI_PopUp" Height="200" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Viewbox>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="StartX: "></TextBlock>
+                <TextBox Text="{Binding p_startX}"></TextBox>
+                <TextBlock Text="StartY: "></TextBlock>
+                <TextBox Text="{Binding p_startY}"></TextBox>
+                <TextBlock Text="Width: "></TextBlock>
+                <TextBox Text="{Binding p_Width}"></TextBox>
+                <TextBlock Text="Height: "></TextBlock>
+                <TextBox Text="{Binding p_Height}"></TextBox>
+            </StackPanel>
+        </Viewbox>
+        <Button Content="OK" FontSize="40" Width="100" Height="60" VerticalContentAlignment="Center" Grid.Row="1" Click="Button_Click"/>
+    </Grid>
+</Window>
