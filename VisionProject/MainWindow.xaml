@@ -49,41 +49,36 @@
                     <MenuItem Header="erode" Command="{Binding erodeCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="dilate" Command="{Binding dilateCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Gaussian" Command="{Binding CV2_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_Gaussian" Command="{Binding AI_GaussianCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Hequal" Command="{Binding CV2_HequalCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_Hequal" Command="{Binding AI_HequalCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Otsu" Command="{Binding CV2_OtsuCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_Otsu" Command="{Binding AI_OtsuCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Laplace" Command="{Binding CV2_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_Laplace" Command="{Binding AI_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="AI_LPF" Command="{Binding AI_LPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_Template Match" Command="{Binding AI_TMCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
-                <ComboBox Focusable="False" ItemsSource="{Binding p_ColorList}" SelectedValue="{Binding p_color}" Width="50" />
+                <ComboBox Focusable="False" ItemsSource="{Binding p_imageView.p_ColorList}" SelectedValue="{Binding p_imageView.p_color}" Width="50" />
             </Menu>
         </Grid>
         <Grid DockPanel.Dock="Bottom" Background="Gray">
             <Grid>
                 <Grid HorizontalAlignment="Left" Margin="5,0">
                     <StackPanel Orientation="Horizontal" TextElement.Foreground="White">
-                        <TextBlock Text="{Binding p_mouseX}"/>
+                        <TextBlock Text="{Binding p_imageView.p_mouseX}"/>
                         <TextBlock Text=","/>
-                        <TextBlock Text="{Binding p_mouseY}"/>
+                        <TextBlock Text="{Binding p_imageView.p_mouseY}"/>
                         <TextBlock Text=" ("/>
-                        <TextBlock Text="{Binding p_mouseMemX}"/>
+                        <TextBlock Text="{Binding p_imageView.p_mouseMemX}"/>
                         <TextBlock Text=","/>
-                        <TextBlock Text="{Binding p_mouseMemY}"/>
+                        <TextBlock Text="{Binding p_imageView.p_mouseMemY}"/>
                         <TextBlock Text=")"/>
                     </StackPanel>
                 </Grid>
                 <Grid HorizontalAlignment="Right" Margin="5,0" Height="15">
                     <StackPanel Orientation="Horizontal" TextElement.Foreground="White">
                         <TextBlock Text="R" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding p_pixelData1}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding p_imageView.p_pixelData1}" Margin="0,0,10,0"/>
                         <TextBlock Text="G" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding p_pixelData2}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding p_imageView.p_pixelData2}" Margin="0,0,10,0"/>
                         <TextBlock Text="B" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding p_pixelData3}" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding p_imageView.p_pixelData3}" Margin="0,0,10,0"/>
                     </StackPanel>
                 </Grid>
             </Grid>
@@ -91,16 +86,16 @@
         <Grid Background="Black">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="MouseMove">
-                    <i:CallMethodAction TargetObject="{Binding}" MethodName="MouseMove" />
+                    <i:CallMethodAction TargetObject="{Binding p_imageView}" MethodName="MouseMove" />
                 </i:EventTrigger>
                 <i:EventTrigger EventName="MouseWheel">
-                    <i:CallMethodAction TargetObject="{Binding}" MethodName="MouseWheel" />
+                    <i:CallMethodAction TargetObject="{Binding p_imageView}" MethodName="MouseWheel" />
                 </i:EventTrigger>
             </i:Interaction.Triggers>
             <Canvas Background="Transparent" obs:SizeObserver.Observe="true" Focusable="True"
-                obs:SizeObserver.ObservedWidth="{Binding p_CanvasWidth, Mode=TwoWay}"
-                obs:SizeObserver.ObservedHeight="{Binding p_CanvasHeight, Mode=OneWayToSource}" Grid.ColumnSpan="2">
-                <Image Source="{Binding Path = p_bitmapSource}" Stretch="Fill"/>
+                obs:SizeObserver.ObservedWidth="{Binding p_imageView.p_CanvasWidth, Mode=TwoWay}"
+                obs:SizeObserver.ObservedHeight="{Binding p_imageView.p_CanvasHeight, Mode=OneWayToSource}" Grid.ColumnSpan="2">
+                <Image Source="{Binding Path = p_imageView.p_bitmapSource}" Stretch="Fill"/>
             </Canvas>
         </Grid>
     </DockPanel>

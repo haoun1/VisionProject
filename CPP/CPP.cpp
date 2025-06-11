@@ -418,7 +418,6 @@ void Tool::CV2_FFTLowPassFiltering(BYTE* pSrc, BYTE* pDst, int nW, int nH, int n
 	imshow("imgSrc", imgSrc);
 	imshow("Spectrum", magI);
 	imshow("imgDst", imgDst);
-	waitKey();
 }
 
 

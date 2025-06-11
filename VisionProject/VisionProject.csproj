@@ -130,13 +130,16 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Domain\ImageProcess.cs" />
+    <Compile Include="View\ImageView.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="View\MainWindowViewModel.cs" />
+    <Compile Include="Domain\MemoryManager.cs" />
     <Compile Include="MVVM\ScrollViewHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
