@@ -1,0 +1,31 @@
+﻿<Window x:Class="VisionProject.View.Init_PopUp"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VisionProject.View"
+        mc:Ignorable="d"
+        Title="Init_PopUp" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="원하는 메모리의 전체 크기와 color여부를 입력해주세요,&#x0a;Color모드의 경우 공간을 3배로 생성합니다." FontSize="30" VerticalAlignment="Center"/>
+        <Viewbox Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="MemoryWidth: "></TextBlock>
+                <TextBox Text="{Binding p_memoryW}"></TextBox>
+                <TextBlock Text="MemoryHeight: "></TextBlock>
+                <TextBox Text="{Binding p_memoryH}"></TextBox>
+                <TextBlock Text="Color?: "></TextBlock>
+                <ComboBox SelectedValue="{Binding p_bColor, Mode=TwoWay}" SelectedValuePath="Tag">
+                    <ComboBoxItem Tag="True" Content="Enable Color"/>
+                    <ComboBoxItem Tag="False" Content="Disable Color"/>
+                </ComboBox>
+            </StackPanel>
+        </Viewbox>
+        <Button Content="OK" FontSize="40" Width="100" Height="60" VerticalContentAlignment="Center" Grid.Row="2" Click="Button_Click"/>
+    </Grid>
+</Window>

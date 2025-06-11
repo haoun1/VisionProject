@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using VisionProject.View;
 
 namespace VisionProject
 {
@@ -23,7 +24,16 @@ namespace VisionProject
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainWindowViewModel((int)Width, (int)Height);
+            Init_ViewModel vm = new Init_ViewModel();
+            Init_PopUp ui = new Init_PopUp();
+            ui.DataContext = vm;
+            ui.ShowDialog();
+            if (vm.p_memoryW <= 0 || vm.p_memoryH <= 0)
+            {
+                MessageBox.Show("Memory width or height <= 0");
+                return;
+            }
+            DataContext = new MainWindowViewModel((int)Width, (int)Height, vm.p_memoryW, vm.p_memoryH, vm.p_bColor);
         }
     }
 }

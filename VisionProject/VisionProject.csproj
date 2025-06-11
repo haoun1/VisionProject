@@ -133,6 +133,7 @@
     </Compile>
     <Compile Include="Domain\CPoint.cs" />
     <Compile Include="Domain\ImageProcess.cs" />
+    <Compile Include="View\Init_ViewModel.cs" />
     <Compile Include="MVVM\ObservableObject.cs" />
     <Compile Include="MVVM\RelayCommand.cs" />
     <Compile Include="View\ImageSaveROI_PopUp.xaml.cs">
@@ -148,8 +149,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Init_PopUp.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="View\Init_PopUp.xaml.cs">
+      <DependentUpon>Init_PopUp.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\MainWindowViewModel.cs" />
     <Compile Include="Domain\MemoryManager.cs" />
     <Compile Include="MVVM\ScrollViewHelper.cs" />

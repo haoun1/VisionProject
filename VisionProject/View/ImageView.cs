@@ -496,21 +496,42 @@ namespace VisionProject
                     abuf = new byte[memoryManager.MemoryW * nByte];
                     for (int i = 0; i < memoryManager.MemoryH; i++)
                     {
-                        Marshal.Copy(abuf, 0, memoryManager.RPtr, abuf.Length);
+                        IntPtr ptr = new IntPtr(memoryManager.RPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
                     }
                     break;
                 case ColorMode.G:
                     abuf = new byte[memoryManager.MemoryW * nByte];
                     for (int i = 0; i < memoryManager.MemoryH; i++)
                     {
-                        Marshal.Copy(abuf, 0, memoryManager.GPtr, abuf.Length);
+                        IntPtr ptr = new IntPtr(memoryManager.GPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
                     }
                     break;
                 case ColorMode.B:
                     abuf = new byte[memoryManager.MemoryW * nByte];
                     for (int i = 0; i < memoryManager.MemoryH; i++)
                     {
-                        Marshal.Copy(abuf, 0, memoryManager.BPtr, abuf.Length);
+                        IntPtr ptr = new IntPtr(memoryManager.BPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
+                    }
+                    break;
+                case ColorMode.Color:
+                    abuf = new byte[memoryManager.MemoryW * nByte];
+                    for (int i = 0; i < memoryManager.MemoryH; i++)
+                    {
+                        IntPtr ptr = new IntPtr(memoryManager.RPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
+                    }
+                    for (int i = 0; i < memoryManager.MemoryH; i++)
+                    {
+                        IntPtr ptr = new IntPtr(memoryManager.GPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
+                    }
+                    for (int i = 0; i < memoryManager.MemoryH; i++)
+                    {
+                        IntPtr ptr = new IntPtr(memoryManager.BPtr.ToInt64() + ((long)i) * memoryManager.MemoryW * nByte);
+                        Marshal.Copy(abuf, 0, ptr, abuf.Length);
                     }
                     break;
                 default:
