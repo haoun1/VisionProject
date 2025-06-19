@@ -52,7 +52,7 @@
                     <MenuItem Header="CV2_Hequal" Command="{Binding CV2_HequalCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Otsu" Command="{Binding CV2_OtsuCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                     <MenuItem Header="CV2_Laplace" Command="{Binding CV2_LaplaceCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
-                    <MenuItem Header="AI_LPF" Command="{Binding AI_LPFCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
+                    <MenuItem Header="TileSave" Command="{Binding TileSaveCommand}" Background="Gray" Foreground="White" Style="{StaticResource Menu}"/>
                 </MenuItem>
                 <ComboBox Focusable="False" ItemsSource="{Binding p_imageView.p_ColorList}" SelectedValue="{Binding p_imageView.p_color}" Width="50" />
             </Menu>
