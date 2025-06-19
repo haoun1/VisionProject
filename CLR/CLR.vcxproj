@@ -49,7 +49,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CLRSupport>true</CLRSupport>
@@ -79,6 +79,9 @@
     <IncludePath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>C:\Program Files\Intel\IPP\5.3.2.073\em64t\stublib;C:\Program Files\Intel\IPP\5.3.2.073\em64t\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -121,9 +124,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Lib\opencv\include;C:\Program Files\Intel\IPP\5.3.2.073\em64t\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <AdditionalDependencies />
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib\opencv\lib;C:\Program Files\Intel\IPP\5.3.2.073\em64t\stublib;C:\Program Files\Intel\IPP\5.3.2.073\em64t\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>ippiem64t.lib ippsem64t.lib ippcvem64t.lib ippmem64t.lib ippccem64t.lib  %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

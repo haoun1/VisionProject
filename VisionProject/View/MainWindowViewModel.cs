@@ -22,6 +22,7 @@ using MessageBox = System.Windows.MessageBox;
 using VisionProject.MVVM;
 using VisionProject.View;
 using VisionProject.Domain;
+using static VisionProject.Domain.ResourceMonitor;
 
 namespace VisionProject
 {
@@ -141,19 +142,28 @@ namespace VisionProject
             });
         }
 
-        public RelayCommand AI_LPFCommand
+        public RelayCommand TileSaveCommand
         {
             get => new RelayCommand(() =>
             {
                 try
                 {
-                    p_imageProcess.AI_FFT_LPF(p_imageView.p_color, p_memoryManager.RPtr, p_memoryManager.GPtr, p_memoryManager.BPtr, p_memoryManager.MemoryW, p_memoryManager.MemoryH, (int)p_imageView.p_bitmapSource.Width, (int)p_imageView.p_bitmapSource.Height);
+                    RunCpuMeasuredSaveAsync();
                 }
                 catch (Exception e)
                 {
                     System.Windows.MessageBox.Show(e.Message);
                 }
+           });
+        }
+        private async void RunCpuMeasuredSaveAsync()
+        {
+            CpuUsageResult result = await ResourceMonitor.MeasureCpuDuringAsync(async () =>
+            {
+                p_imageProcess.SplitTileSave(p_memoryManager.RPtr, "test", (int)p_memoryManager.MemoryW, (int)p_memoryManager.MemoryH, 5000, 5000);
             });
+            Console.WriteLine($"함수 실행 시간: {result.ElapsedMilliseconds} ms");
+            Console.WriteLine($"평균 CPU 사용률: {result.AverageCpuUsage:F2} %");
         }
         public RelayCommand ImageLoadCommand
         {
