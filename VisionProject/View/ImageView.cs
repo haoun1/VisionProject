@@ -337,6 +337,11 @@ namespace VisionProject
                     }
                     else
                     {
+                        if(!memoryManager.IsColor)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Gray Mode에서 Color이미지를 열 수 없습니다");
+                            return;
+                        }
                         fileRowSize = (Bit_Width * nByte + 3) & ~3;
                         abuf = new byte[Bit_Width * nByte];
                         Rectangle rect = new Rectangle(0, 0, Bit_Width, Bit_Height);
@@ -940,6 +945,7 @@ namespace VisionProject
         }
         void SetRoiRect()
         {
+            if (p_CanvasHeight == 0 || p_CanvasWidth == 0) return;
             CPoint StartPt = GetStartPoint_Center((int)memoryManager.MemoryW, (int)memoryManager.MemoryH);
             bool bRatio_WH = (double)memoryManager.MemoryW / p_CanvasWidth < (double)memoryManager.MemoryH / p_CanvasHeight;
             if (bRatio_WH)
